@@ -32,6 +32,8 @@ zuordnung zu personen
 
 Ki Suche von fotos zb Katze
 
+Suche nach Filter anhand Tags/Kategorien (od. Textinhalt)
+
 Ki Texterkennung in fotos
 
 ki Rückblicke

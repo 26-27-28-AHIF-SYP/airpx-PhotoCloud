@@ -1,0 +1,47 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam actor {
+    BackgroundColor #f0e6ff
+    BorderColor #7c3aed
+}
+skinparam usecase {
+    BackgroundColor #ffffff
+    BorderColor #a78bfa
+}
+
+actor "Basisnutzer" as BaseUser
+actor "Empfänger" as Receiver
+
+Receiver --|> BaseUser
+
+package "AirPx" {
+
+    usecase "Einloggen / Ausloggen" as UC_Auth
+    usecase "Alben anlegen & verwalten" as UC_Albums
+    usecase "Cloud-Sync konfigurieren" as UC_Sync
+    usecase "KI-Analyse nutzen" as UC_KI
+    usecase "Duplikaterkennung" as UC_Dedup
+    usecase "Texterkennung (OCR)" as UC_OCR
+    usecase "Via QR Code teilen" as UC_QRShare
+    usecase "Direkt an Kontakt teilen" as UC_ContactShare
+
+    usecase "Geteilte Alben ansehen" as UC_ViewShared
+    usecase "Via QR Code zugreifen" as UC_QRAccess
+    usecase "Kommentieren & Reagieren" as UC_Interact
+}
+
+BaseUser --> UC_Auth
+BaseUser --> UC_Albums
+BaseUser --> UC_Sync
+BaseUser --> UC_KI
+UC_KI ..> UC_Dedup : <<include>>
+UC_KI ..> UC_OCR : <<include>>
+BaseUser --> UC_QRShare
+BaseUser --> UC_ContactShare
+
+Receiver --> UC_ViewShared
+Receiver --> UC_QRAccess
+Receiver --> UC_Interact
+
+@enduml

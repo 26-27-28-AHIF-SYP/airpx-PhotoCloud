@@ -3,15 +3,15 @@
 ## 1. Ausgangslage
 
 ### 1.1. Ist-Situation
-- HTL Leonding 4./5. Klasse Syp-Projekt
-- Entwicklung von airpx, einer Photo-Cloud, als Software-Projekt
-- 
+- Es gibt bereits zahlreiche Cloud-Speicher- und Foto-Sharing-Dienste.
+- Viele dieser Dienste werden von großen internationalen Unternehmen betrieben, wodurch Nutzer nur begrenzte Kontrolle über die Speicherung und Verarbeitung Ihrer Daten haben(Datenschutz).
+- Es werden oft eingeschränkte oder unübersichtliche Berechtigungsmodelle geboten.
+- Klassischer lokale Speicherung (Festplatte, USB-Stick) ist weit verbreitet.
 
 ### 1.2. Verbesserungspotenziale
-- Es gibt bereits zahlreiche Cloud-Speicher- und Foto-Sharing-Dienste, welche jedoch oft eingeschränkte oder unübersichtliche Berechtigungsmodelle bieten
-- Gegenüber klassischer lokaler Speicherung (Festplatte, USB-Stick) bietet airpx Verfügbarkeit von überall und auf mehreren Geräten (Mobile & Web)
 - Automatisches Organisieren und Auffinden von Fotos durch KI, statt manueller Sortierung
 - Feingranulare, pro Album bzw. pro Freund einstellbare Freigaben (View/Save/Add/Delete) statt "Alles-oder-nichts"-Freigaben
+- Bei klassischer lokaler Speicherung sind die Daten nicht von überall verfügbar.
 
 ## 2. Zielsetzung
 

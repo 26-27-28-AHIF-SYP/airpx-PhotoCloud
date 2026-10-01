@@ -40,15 +40,11 @@
   - Aufwand der KI-Integration wird unterschätzt
 
 ## 4. Planung
-- Priorisierung der geplanten Features:
-  1. Entwicklung der Benutzeroberfläche (Mobile & Web)
-  2. Album- und Foto-Verwaltung (Upload, verschachtelte Alben)
-  3. Berechtigungssystem (View/Save/Add/Delete)
-  4. Benutzeraccount-System (inkl. Login-Sync Mobile/Web)
-  5. KI-Funktionen (Sortierung, Suche, Bild-/Texterkennung)
-  6. Testen
+Priorisierung der geplanten Features:
+1. Album- und Foto-Verwaltung (Upload, verschachtelte Alben)
+2. Berechtigungssystem (View/Save/Add/Delete)
+3. Entwicklung der Benutzeroberfläche (Mobile & Web)
+4. Benutzeraccount-System (inkl. Login-Sync Mobile/Web)
+5. Suche und Filterung 
+6. KI-gestützte Sortierung, Suche und Bild-/Texterkennung
 
-  Milestones
-  1. Ostern: funktionierender Grundsatz (Upload, einfache Alben, grobe Benutzeroberfläche für Mobile & Web)
-  2. Mai: Berechtigungssystem, verschachtelte Alben, erste KI-Funktionen + anschauliches UI/UX
-  3. Juni: Polishing, Fertigstellung, eventuelle Erweiterungen (z. B. weitere KI-Features)

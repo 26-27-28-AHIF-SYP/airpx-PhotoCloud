@@ -1,0 +1,93 @@
+@startuml
+skinparam packageStyle rectangle
+skinparam node {
+    BackgroundColor #f0e6ff
+    BorderColor #7c3aed
+}
+skinparam artifact {
+    BackgroundColor #ffffff
+    BorderColor #a78bfa
+}
+skinparam database {
+    BackgroundColor #e9d5ff
+    BorderColor #7c3aed
+}
+skinparam port {
+    BackgroundColor #fff4e6
+    BorderColor #ffc107
+}
+
+package "AirPx System" {
+    node "Handy (Android)" as Mobile {
+        artifact "AirPx App" as App
+        artifact "Auto-Backup & Sync" as Sync
+        artifact "Lokale Bildbearbeitung" as Edit
+        artifact "Offline Speicher" as Cache
+        
+        App --> Sync : startet Sync
+        App --> Edit : bearbeitet Fotos
+        App --> Cache : Offline-Zugriff
+    }
+
+    node "Web Browser" as Web {
+        artifact "AirPx Website" as WebClient
+        artifact "Web-Bildbearbeitung" as WebEdit
+        artifact "Browser-Benachrichtigungen" as WebNotif
+    }
+    node "AirPx Server" as Server {
+        artifact "Zentrale Schnittstelle & Login" as API
+        artifact "Album- & Rechteverwaltung" as Perm
+        artifact "Benachrichtigungs-Service" as Notif
+        artifact "Verschlüsselungs-Modul" as Crypto
+        artifact "Account-Manager (2FA/SSO/Selfhosted)" as Account
+        
+        database "Foto-Speicher" as PhotoDB
+        database "Nutzer- & Albumdaten" as MetaDB
+        
+        port "KI-Analyse Anschluss" as AIPort
+        port "QR-Code Generator / Scanner" as QRPort
+    }
+    
+    node "KI-System (Lokal/Extern/Cloud)" as AI {
+        artifact "Sortierung / OCR / Gesichtserkennung" as AIService
+        artifact "Duplikat-Erkennung" as Dedup
+        artifact "KI-Rückblicke & Suche" as Recall
+        artifact "KI-Bildbearbeitung" as AIEdit
+    }
+    
+    node "QR-Code Service" as QR {
+        artifact "Öffentliche Alben Upload" as PublicQR
+        artifact "Teilen / Einladen" as ShareQR
+    }
+}
+
+App --> API : HTTPS/REST + Sync + Upload
+WebClient --> API : HTTPS/REST + Upload
+Edit --> API : Upload bearbeiteter Fotos
+WebEdit --> API : Upload bearbeiteter Fotos
+Cache <-- API : Download geteilter Alben
+
+API --> Perm : Prüft Rechte + Permission Tags
+Perm --> PhotoDB : Lädt Fotos (statisch/dynamisch/öffentlich/profil)
+Perm --> MetaDB : Album-Hierarchie & Einstellungen
+API --> Crypto : Verschlüsselt/Entschlüsselt
+API --> Account : 2FA/SSO/Selfhosted
+Notif --> MetaDB : Friend-Requests/Kommentare/Rückblicke
+Notif --> App : Push Notifications
+Notif --> WebNotif : Browser Events
+
+API --> AIPort : Analyse/Suche/Rückblick/Bearbeitung
+AIPort <--> AIService : HTTP/gRPC
+AIPort <--> Dedup : Duplikate erkennen
+AIPort <--> Recall : Rückblicke & Suche ("Katze")
+AIPort <--> AIEdit : KI-Bildbearbeitung
+AIService --> PhotoDB : Tags/Gesichter/OCR
+AIService --> MetaDB : Suchindex & Personen-Zuordnung
+
+API --> QRPort : Erstelle/Scanne QR-Codes
+QRPort <--> PublicQR : Upload zu öffentlichem Album
+QRPort <--> ShareQR : Teilen/Einladen
+PublicQR --> PhotoDB : Speichert Bilder
+ShareQR --> Perm : Setzt Berechtigungen
+
+@enduml

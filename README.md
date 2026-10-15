@@ -4,14 +4,14 @@
 
 ### 1.1. Ist-Situation
 - Es gibt bereits zahlreiche Cloud-Speicher- und Foto-Sharing-Dienste.
-- Viele dieser Dienste werden von großen internationalen Unternehmen betrieben, wodurch Nutzer nur begrenzte Kontrolle über die Speicherung und Verarbeitung Ihrer Daten haben(Datenschutz).
+- Viele dieser Dienste werden von großen internationalen Unternehmen betrieben. Dadurch haben Nutzer nur begrenzte Kontrolle darüber, wie ihre Fotos und Metadaten gespeichert, verarbeitet und möglicherweise für die Analyse oder das Training von KI-Systemen verwendet werden.
 - Es werden oft eingeschränkte oder unübersichtliche Berechtigungsmodelle geboten.
 - Klassischer lokale Speicherung (Festplatte, USB-Stick) ist weit verbreitet.
 
 ### 1.2. Verbesserungspotenziale
 - Automatisches Organisieren und Auffinden von Fotos durch KI, statt manueller Sortierung
 - Feingranulare, pro Album bzw. pro Freund einstellbare Freigaben (View/Save/Add/Delete) statt "Alles-oder-nichts"-Freigaben
-- Bei klassischer lokaler Speicherung sind die Daten nicht von überall verfügbar.
+- Bei klassischer lokaler Speicherung die Daten nicht von überall verfügbar zu haben, das eigene system mit einem Cloudservice verbinden.
 
 ## 2. Zielsetzung
 
@@ -28,16 +28,30 @@
 
 ## 3. Chancen und Risiken
 - **S**trenghts
-  - Klar definiertes, aus der Praxis bekanntes Feature-Set (README als Basis)
+  - Kombination aus Fotoverwaltung und KI - Funktionen
+  - Benutzerfreundliche Verwaltung von Fotos und verschachtelten Alben
+  - Individuell einstellbare Berechtigungen
+  - Gemeinsame Nutzung von Fotos über Web und Mobile
+  - Praxisnahes Projekt mit klar erkennbarem Nutzen für die Zielgruppe
 - **W**eaknesses:
+  - Hoher Entwicklungsaufwand 
   - Komplexität durch KI-Funktionen (Sortierung, Erkennung) noch ungewohnt
+  - Hoher Speicher- und Rechenbedarf bei großen Foto-Sammlungen
+  - Begrenzte Entwicklungszeit und Erfahrung mit Cloud-Architektur und Bilderkennung
   - Verschachtelte Alben mit vererbten Berechtigungen sind anspruchsvoll
 - **O**pportunities
   - Sammeln von Erfahrungen mit Cloud-Architektur, Mobile- und Web-Entwicklung
   - Vertiefung im Bereich KI/Bilderkennung
+  - Potenzial für eine spätere Weiterentwicklung zu einem eigenständigen Produkt
+  
 - **T**hreats:
   - Datenschutz/Sicherheit bei sensiblen Foto- und Nutzerdaten
   - Aufwand der KI-Integration wird unterschätzt
+  - Steigende Speicher- und Betriebskosten bei großen Datenmengen
+  - Fehlerhafte KI-Ergebnisse, beispielsweise falsche Personen- oder Objekterkennung
+  - Abhängigkeit von externen Diensten, Bibliotheken oder KI-Modellen
+  - Rechtliche Anforderungen an Datenschutz, Einwilligung und die Verarbeitung personenbezogener Daten
+  - Möliche Zeitverzögungen
 
 ## 4. Planung
 Priorisierung der geplanten Features:

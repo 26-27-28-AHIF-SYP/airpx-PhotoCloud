@@ -4,9 +4,9 @@
 ---
 
 ## 1
-<img src="" height="200px">
+<img src="https://upload.wikimedia.org/wikipedia/en/f/f3/Klaus_The_Originals.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=original" height="200px">
 
-### Family dad
+### Markus(27) Family dad
 
 > I just want all our family photos in one place: At Home and not in some cooperations hands.
 
@@ -24,21 +24,20 @@ holidays. He wants to keep these memories safe and share them with his family.
 - Worrying about the privacy of his children's photos.
 - Having to transfer photos manually between devices.
 
-**Context of use:** At home on his laptop or smartphone, has his own photo server set up; sharing photos with family 
-members or looking at old memories.
+**Context of use:** Uses his laptop or smartphone at home. He has his own photo server and wants to share photos with family members or look at old memories.
 
 **Tech-savviness:** Medium to high; comfortable with everyday apps but prefers simple, automated solutions.
 
 ---
 
 ## 2
-<img src="" height="200px">
+<img src="https://media.istockphoto.com/id/912996620/photo/casual-business-woman-working-online-at-a-co-working-space.jpg?s=612x612&w=0&k=20&c=1BDY_aDg1fHlcpD-gWJWTCO4qL1xjacmwe3oYZZN14Q=" height="200px">
 
-### Professional photo editor
+### Sabrina (32) Professional photo editor
 
-> 
+> I want to be able to find my images fast - so I can do my job faster.
 
-**Background:** Works with large numbers of high-resolution images for clients. Needs an efficient way to organize, 
+**Background:** Works with large numbers of high-resolution images. Needs an efficient way to organize, 
 access and manage her photo collection.
 
 **Goals:**
@@ -60,9 +59,9 @@ access and manage her photo collection.
 ---
 
 ## 3
-<img src="" alt="" height="200px">
+<img src="https://www.planetmountain.com/uploads/img/1/72678.jpg" alt="" height="200px">
 
-### Hobby photographer
+### Simon (30) Hobby photographer
 
 > I want my pictures to sync safely from anywhere, so I never have to worry about losing them.
 
@@ -86,10 +85,10 @@ access and manage her photo collection.
 ---
 
 ## 4
-<img src="" height="200px">
+<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHEjfv3rdIhYEW6id0Otv6aA03ZkcBruXpxbWyXKvNXA&s=10" height="200px">
 
 
-### camp supervisor
+### Sascha (35) camp supervisor
 
 > Everyone takes photos at camp, but collecting them and sharing the right pictures with the right parents is a real challenge.
 

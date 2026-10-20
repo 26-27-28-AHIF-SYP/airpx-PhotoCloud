@@ -1,4 +1,3 @@
-
 # Personas
 
 ---
@@ -6,120 +5,102 @@
 ## 1
 <img src="https://upload.wikimedia.org/wikipedia/en/f/f3/Klaus_The_Originals.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=original" height="200px">
 
-### Markus(27) Family dad
+### Markus (27) Familienvater
 
-> I just want all our family photos in one place: At Home and not in some cooperations hands.
+> Ich möchte einfach alle unsere Familienfotos an einem Ort haben: Zu Hause und nicht in den Händen von Konzernen.
 
-**Background:** Markus is a father of two children who takes many photos of family activities, birthdays and 
-holidays. He wants to keep these memories safe and share them with his family.
+**Hintergrund:** Markus ist Vater von zwei Kindern und macht viele Fotos von Familienaktivitäten, Geburtstagen und Urlauben. Er möchte diese Erinnerungen sicher aufbewahren und mit seiner Familie teilen.
 
-**Goals:**
-- Store all family photos in one place.
-- Automatically synchronize photos from different devices.
-- Share albums with family members.
-- Keep private family photos secure.
+**Ziele:**
+- Alle Familienfotos an einem zentralen Ort speichern.
+- Fotos automatisch von verschiedenen Geräten synchronisieren.
+- Alben mit Familienmitgliedern teilen.
+- Private Familienfotos sicher aufbewahren.
 
-**Pain Points:**
-- Running out of storage space on his phone.
-- Worrying about the privacy of his children's photos.
-- Having to transfer photos manually between devices.
+**Schmerzpunkte:**
+- Wenig Speicherplatz auf dem Smartphone.
+- Sorgen um die Privatsphäre der Fotos seiner Kinder.
+- Manuelles Übertragen von Fotos zwischen Geräten ist mühsam.
 
-**Context of use:** Uses his laptop or smartphone at home. He has his own photo server and wants to share photos with family members or look at old memories.
+**Nutzungskontext:** Nutzt seinen Laptop oder sein Smartphone zu Hause. Er besitzt einen eigenen Foto-Server und möchte Fotos mit der Familie teilen oder alte Erinnerungen ansehen.
 
-**Tech-savviness:** Medium to high; comfortable with everyday apps but prefers simple, automated solutions.
+**Technik-Affinität:** Mittel bis hoch; vertraut mit alltäglichen Apps, bevorzugt aber einfache, automatisierte Lösungen.
 
 ---
 
 ## 2
 <img src="https://media.istockphoto.com/id/912996620/photo/casual-business-woman-working-online-at-a-co-working-space.jpg?s=612x612&w=0&k=20&c=1BDY_aDg1fHlcpD-gWJWTCO4qL1xjacmwe3oYZZN14Q=" height="200px">
 
-### Sabrina (32) Professional photo editor
+### Sabrina (32) Professionelle Fotoredakteurin
 
-> I want to be able to find my images fast - so I can do my job faster.
+> Ich möchte meine Bilder schnell finden können – damit ich meine Arbeit effizienter erledigen kann.
 
-**Background:** Works with large numbers of high-resolution images. Needs an efficient way to organize, 
-access and manage her photo collection.
+**Hintergrund:** Arbeitet mit großen Mengen hochauflösender Bilder. Benötigt eine effiziente Möglichkeit, ihre Fotosammlung zu organisieren, darauf zuzugreifen und sie zu verwalten.
 
-**Goals:**
-- Search for objects in pictures.
-- Organize photos automatically using AI. 
-- Access original images in full resolution. 
-- Synchronize files between her computer and other devices. 
-- Control who can view, download or edit her photos.
+**Ziele:**
+- Objekte in Bildern suchen.
+- Fotos automatisch mithilfe von KI organisieren.
+- Auf Originalbilder in voller Auflösung zugreifen.
+- Dateien zwischen ihrem Computer und anderen Geräten synchronisieren.
+- Kontrollieren, wer ihre Fotos ansehen, herunterladen oder bearbeiten darf.
 
-**Pain Points:**
-- Slow uploads and downloads of large image files.
-- Losing track of images across different projects
-- Concerns about confidential client photos being used for AI training without permission.
+**Schmerzpunkte:**
+- Langsame Uploads und Downloads großer Bilddateien.
+- Den Überblick über Bilder in verschiedenen Projekten verlieren.
+- Bedenken, dass vertrauliche Kundenfotos ohne Erlaubnis für KI-Training verwendet werden.
 
-**Context of use:** Works on her computer.
+**Nutzungskontext:** Arbeitet hauptsächlich am Computer.
 
-**Tech-savviness:** Very high; expects advanced features, reliable performance and detailed permission settings.
+**Technik-Affinität:** Sehr hoch; erwartet fortschrittliche Funktionen, zuverlässige Leistung und detaillierte Berechtigungseinstellungen.
 
 ---
 
 ## 3
 <img src="https://www.planetmountain.com/uploads/img/1/72678.jpg" alt="" height="200px">
 
-### Simon (30) Hobby photographer
+### Simon (30) Hobby-Fotograf
 
-> I want my pictures to sync safely from anywhere, so I never have to worry about losing them.
+> Ich möchte, dass meine Bilder von überall sicher synchronisiert werden, damit ich mir nie Sorgen um Datenverlust machen muss.
 
-**Background:** Enjoys photography while travelling, hiking and exploring new places. Takes photos with both a digital camera and his smartphone.
+**Hintergrund:** Genießt Fotografie beim Reisen, Wandern und Erkunden neuer Orte. Macht Fotos sowohl mit einer Digitalkamera als auch mit seinem Smartphone.
 
-**Goals:** 
-- Automatically synchronize photos from different devices.
-- Back up pictures safely and prevent data loss.
-- Organize and find photos quickly.
-- Access his collection wherever he is.
+**Ziele:**
+- Fotos automatisch von verschiedenen Geräten synchronisieren.
+- Bilder sicher sichern und Datenverlust verhindern.
+- Fotos schnell organisieren und finden.
+- Von überall auf seine Sammlung zugreifen.
 
-**Pain Points:** 
-- Losing photos when a device breaks or gets lost.
-- Unreliable internet access while traveling.
-- Expensive cloud storage and concerns about personal data.
+**Schmerzpunkte:**
+- Verlust von Fotos, wenn ein Gerät kaputtgeht oder verloren geht.
+- Unzuverlässiger Internetzugang während des Reisens.
+- Teurer Cloud-Speicher und Bedenken hinsichtlich persönlicher Daten.
 
-**Context of use:** Uses his smartphone while travelling and his computer at home to organize, edit and browse photos.
+**Nutzungskontext:** Nutzt sein Smartphone unterwegs und seinen Computer zu Hause, um Fotos zu organisieren, zu bearbeiten und durchzusehen.
 
-**Tech-savviness:** High; enjoys trying new technology and expects synchronization to work seamlessly.
+**Technik-Affinität:** Hoch; probiert gerne neue Technologien aus und erwartet, dass die Synchronisierung nahtlos funktioniert.
 
 ---
 
 ## 4
 <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHEjfv3rdIhYEW6id0Otv6aA03ZkcBruXpxbWyXKvNXA&s=10" height="200px">
 
+### Sascha (35) Camp-Betreuer
 
-### Sascha (35) camp supervisor
+> Jeder macht Fotos im Camp, aber das Sammeln und das Teilen der richtigen Bilder mit den richtigen Eltern ist eine echte Herausforderung.
 
-> Everyone takes photos at camp, but collecting them and sharing the right pictures with the right parents is a real challenge.
+**Hintergrund:** Betreut ein Sommercamp für Kinder. Mehrere Betreuer machen während der Aktivitäten Fotos, und ausgewählte Bilder müssen mit den Eltern geteilt werden.
 
-**Background:** Supervises a summer camp for children. Several supervisors take photos during activities, and selected pictures need to be shared with parents.
+**Ziele:**
+- Fotos von mehreren Betreuern an einem Ort sammeln.
+- Fotos in Alben nach Kind, Aktivität, Ort oder Gruppe organisieren.
+- Ausgewählte Bilder sicher mit Eltern teilen.
+- Zugriffsberechtigungen für verschiedene Personen verwalten.
 
-**Goals:**
-- Collect photos from multiple supervisors in one place.
-- Organize photos into albums by child, activity, location or group.
-- Share selected pictures securely with parents.
-- Manage access permissions for different people.
+**Frustrationen:**
+- Manuelles Sammeln von Fotos von verschiedenen Geräten.
+- Versehentliches Teilen von Bildern mit unbefugten Personen.
+- Schutz der Privatsphäre der Kinder und Verwaltung der Einwilligung zur Weitergabe von Fotos.
 
-**Frustrations:**
-- Having to collect photos manually from different devices.
-- Accidentally sharing pictures with unauthorized people.
-- Protecting children's privacy and managing consent for photo sharing.
+**Nutzungskontext:** Nutzt sein Smartphone während der Camp-Aktivitäten und einen Laptop, um Fotos danach zu organisieren und zu teilen.
 
-**Context of use:** Uses his smartphone during camp activities and a laptop to organize and share photos afterward.
-
-**Tech-savviness:** Medium; comfortable with everyday apps but needs a straightforward interface and clear permission controls.
-
-
----
-
-
-
-
-
-
-
-
-
-
-
-
+**Technik-Affinität:** Mittel; vertraut mit alltäglichen Apps, benötigt aber eine übersichtliche Oberfläche und klare Berechtigungskontrollen.

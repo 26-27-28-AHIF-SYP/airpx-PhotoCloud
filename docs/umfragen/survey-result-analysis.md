@@ -30,7 +30,7 @@
 | :--- | :--- | :--- |
 | **Öffentliche Profile / Alben öffentlich machen** | Kaum Nachfrage nach "Social Media"-Aspekten (Likes/Kommentare nur 2x). | Nutzer wollen Fotos *teilen*, nicht unbedingt eine öffentliche Galerie wie Instagram. |
 | **KI-Rückblicke (Memories)** | *Nicht direkt abgefragt.* | Google Photos macht das gut, aber in der Umfrage nicht explizit gefordert. Kann später kommen. |
-| **SSO (Single Sign-On)** | *Nicht abgefragt.* | Für Self-Hosted/Private Nutzer eher sekundär, es sei denn, ihr zielt auf Firmen ab. |
+| **SSO (Single Sign-On)** | *Nicht abgefragt.* | Für Self-Hosted/Private Nutzer eher sekundär. |
 | **Permission Tags (Feingranulare Rechte)** | Indirekt durch "Passwortschutz für Alben" (8/16) abgedeckt. | Komplexe Rechtesysteme sind oft overkill. Passwortschutz pro Album reicht zunächst. |
 | **Statische vs. Dynamische Alben** | *Nicht abgefragt.* | Technisches Implementierungsdetail. Nutzer wollen einfach "Ordner/Alben". |
 
@@ -38,7 +38,7 @@
 
 #### 1. Datenschutz & Lokale KI ist der Schlüssel
 *   **Erkenntnis:** 6/16 (37,5%) sagen, es ist "Sehr wichtig", dass KI **lokal auf dem Gerät** läuft. Weitere 5/16 (31,3%) finden es "Wichtig".
-*   **Empfehlung:** Wenn ihr KI-Features (OCR, Gesichtserkennung) anbietet, **müssen** diese client-seitig oder self-hosted laufen. Sendet keine Bilder zur Analyse an externe APIs. Das ist euer größter Vorteil gegenüber Google Photos.
+*   **Empfehlung:** Wenn wir KI-Features (OCR, Gesichtserkennung) anbieten, **müssen** diese client-seitig oder self-hosted laufen. Wir senden keine Bilder zur Analyse an externe APIs. Das ist unser größter Vorteil gegenüber Google Photos.
 
 #### 2. Organisation ist ein Schmerzpunkt
 *   **Erkenntnis:** 5/16 (31,3%) stören sich an "Schwieriger Organisation". 8/16 (50%) sortieren ihre Fotos **kaum**.
@@ -49,16 +49,16 @@
 
 #### 3. "Kostenlos" & "Speicherplatz" sind Barrieren
 *   **Erkenntnis:** In den offenen Antworten wird "kostenlos" und "genug Speicherplatz" mehrfach genannt.
-*   **Empfehlung:** Da ihr self-hosted seid, ist das euer Modell. Werbt damit: **"Dein Speicher, deine Regeln, keine Abo-Falle."**
+*   **Empfehlung:** Da wir self-hosted sind, ist das unser Modell. Werben mit: **"Dein Speicher, deine Regeln, keine Abo-Falle."**
 
-#### 4. Was ihr weglassen oder hinten anstellen könnt
+#### 4. Was man weglassen oder hinten anstellen kann
 *   **Soziale Features:** Likes, Kommentare, öffentliche Profile. Das ist nicht gefragt.
 *   **KI-Bildverbesserung:** Kaum Interesse.
 *   **Komplexe Freigabe-Workflows:** Einfache Links mit Passwort reichen erstmal. QR-Codes sind nett, aber nicht prioritär.
 
-### Fazit für euer Feature-Set
+### Fazit für unser Feature-Set
 
-Behaltet diese Features bei und priorisiert sie so:
+Wir behalten diese Features bei und priorisieren sie so:
 
 1.  **Core:** Self-hosted, E2EE Verschlüsselung, Auto-Sync, Accounts/2FA.
 2.  **Organization (KI):** OCR (Texterkennung), Personenerkennung (lokal!), Duplikat-Erkennung (mit Vorschlag), Orts-Sortierung.

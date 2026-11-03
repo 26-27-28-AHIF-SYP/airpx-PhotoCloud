@@ -18,7 +18,10 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "airpix"
+            name: "airpix",
+            resources: [
+                .process("Resources"),
+            ]
         ),
     ]
 )

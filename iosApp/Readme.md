@@ -264,3 +264,15 @@ Suggested order, mapped to the acceptance criteria of issue #6:
 - Free vs paid Apple developer account: https://flaviocopes.com/apple-developer-free-vs-paid/
 
 The 7-day expiry of free-account profiles comes from Microsoft's Xamarin documentation on free provisioning, which was only seen as a search snippet and is several years old. Re-check it against Apple's current documentation.
+
+## 7. Auto-Backup implementation configuration
+
+The iOS app's current Auto-Backup implementation uses PhotoKit, a background `URLSession`, and a periodic `BGProcessingTask`. It is opt-in and remains off until the user enables it. With limited PhotoKit access, only the user's selected assets are visible and synced.
+
+The app's `Info.plist` is supplied through `infoPath` in `airpix/xtool.yml`. It includes:
+
+- `NSPhotoLibraryUsageDescription` for the system permission prompt.
+- `BGTaskSchedulerPermittedIdentifiers` containing `com.example.airpix.photo-sync`.
+- `UIBackgroundModes` containing `processing`, required for background processing.
+
+The POST path `/api/photos/upload` and `BackendConfig.baseURL` are placeholders until the backend upload contract is agreed. The fallback `URLSession`/`BGProcessingTask` path is opportunistic; iOS does not guarantee a precise periodic run, and force-quitting the app can stop background work until the app is opened again. The PhotoKit background resource upload extension described above remains a separate, unverified follow-up.

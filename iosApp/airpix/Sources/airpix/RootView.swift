@@ -1,38 +1,73 @@
 import SwiftUI
 
-private enum TabLabel {
-    static let menu = "Menü"
-    static let settings = "Einstellungen"
-    static let dashboard = "Dashboard"
-}
-
 struct RootView: View {
     let store: SyncStore
     let photoLibrary: PhotoLibraryService
     let uploadQueue: UploadQueue
 
+    @State private var isSettingsPresented = false
+
     var body: some View {
         TabView {
-            ContentView()
-                .tabItem {
-                    Label(TabLabel.menu, systemImage: "photo.on.rectangle.angled")
+            Tab(AppStrings.library, systemImage: "photo.on.rectangle.angled") {
+                NavigationStack {
+                    ContentView()
+                        .toolbar {
+                            settingsButton
+                        }
                 }
+            }
 
+            Tab(AppStrings.collections, systemImage: "square.stack") {
+                NavigationStack {
+                    Text(AppStrings.collectionsPlaceholder)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .navigationTitle(AppStrings.collections)
+                        .toolbar {
+                            settingsButton
+                        }
+                }
+            }
+
+            Tab(AppStrings.search, systemImage: "magnifyingglass", role: .search) {
+                NavigationStack {
+                    Text(AppStrings.searchPlaceholder)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .navigationTitle(AppStrings.search)
+                        .toolbar {
+                            settingsButton
+                        }
+                }
+            }
+        }
+        .sheet(isPresented: $isSettingsPresented) {
             NavigationStack {
                 AutoBackupView(
                     store: store,
                     photoLibrary: photoLibrary,
                     uploadQueue: uploadQueue
                 )
-            }
-            .tabItem {
-                Label(TabLabel.settings, systemImage: "gearshape")
-            }
-
-            DashboardView()
-                .tabItem {
-                    Label(TabLabel.dashboard, systemImage: "square.grid.2x2")
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button(AppStrings.close) {
+                            isSettingsPresented = false
+                        }
+                    }
                 }
+            }
+        }
+    }
+
+    private var settingsButton: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            Button {
+                isSettingsPresented = true
+            } label: {
+                Image(systemName: "gearshape")
+            }
+            .accessibilityLabel(AppStrings.settings)
         }
     }
 }

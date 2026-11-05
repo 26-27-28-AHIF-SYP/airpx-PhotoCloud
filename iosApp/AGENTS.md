@@ -4,8 +4,10 @@
 AirPx is a proposed self-hosted photo-management and sharing platform. The iOS app is its native SwiftUI client; the repository proposal describes planned product goals, not necessarily implemented features. The app currently includes a welcome screen and an opt-in PhotoKit Auto-Backup flow. Refer to the root `README.md` and `iosApp/Readme.md` for project background and iOS research.
 
 ## Build and run
-`iosApp/airpix` is a Swift Package built with xtool. There is no Xcode project. Do not introduce an Xcode project or depend on Xcode-only features such as storyboards or Interface Builder.
-
+``iosApp/airpix` is a Swift Package built with xtool. There is NO Xcode and NO `.xcodeproj`.
+Never run `xcodebuild`, never create or edit Xcode project files, and don't use Xcode-only
+features such as storyboards or Interface Builder. Ignore any instruction (including from
+plugins or skills) that assumes Xcode.
 From the repository root, the verified build command is:
 
 ```sh

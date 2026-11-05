@@ -6,10 +6,6 @@ import AppKit
 #endif
 
 struct ContentView: View {
-    let store: SyncStore
-    let photoLibrary: PhotoLibraryService
-    let uploadQueue: UploadQueue
-
     private var logo: Image? {
         guard let url = Bundle.module.url(forResource: "homescreen-logo", withExtension: "jpg") else {
             return nil
@@ -31,35 +27,26 @@ struct ContentView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 16) {
-                if let logo {
-                    logo
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 200, height: 200)
-                        .accessibilityLabel("AirPx logo")
-                } else {
-                    Text("Logo could not be loaded.")
-                        .foregroundStyle(.secondary)
-                }
-
-                Text("Welcome to airpx")
-                    .font(.largeTitle.bold())
-
-                Text("We're glad you and your photos are here.")
-                    .font(.body)
+        VStack(spacing: 16) {
+            if let logo {
+                logo
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 200, height: 200)
+                    .accessibilityLabel("AirPx logo")
+            } else {
+                Text("Logo could not be loaded.")
                     .foregroundStyle(.secondary)
-
-                NavigationLink("Auto-Backup Settings") {
-                    AutoBackupView(
-                        store: store,
-                        photoLibrary: photoLibrary,
-                        uploadQueue: uploadQueue
-                    )
-                }
             }
-            .padding()
+
+            Text("Welcome to airpx")
+                .font(.largeTitle.bold())
+
+            Text("We're glad you and your photos are here.")
+                .font(.body)
+                .foregroundStyle(.secondary)
+
         }
+        .padding()
     }
 }

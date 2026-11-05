@@ -47,7 +47,7 @@ iosApp/
 
 ## Technical constraints and project rules
 - Use Swift and SwiftUI, Apple frameworks, and SwiftPM. The package currently declares no third-party dependencies; get approval before adding any.
-- The minimum supported iOS version is 17.0, as declared in `Package.swift`.
+- The minimum supported iOS version is 26.0, as declared in `Package.swift`.
 - Auto-Backup is opt-in and off by default. With limited PhotoKit access, sync only the assets visible to the app.
 - Keep the backend base URL in `BackendConfig` (currently in `Sources/airpix/UploadQueue.swift`). The only upload route currently specified is the placeholder `POST /api/photos/upload`, marked with a TODO. Do not invent backend routes.
 - Store credentials and secrets in the Keychain; do not hard-code them. No Keychain implementation is present yet.

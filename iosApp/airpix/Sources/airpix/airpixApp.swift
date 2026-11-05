@@ -20,7 +20,7 @@ struct airpixApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView(
+            RootView(
                 store: store,
                 photoLibrary: photoLibrary,
                 uploadQueue: uploadQueue

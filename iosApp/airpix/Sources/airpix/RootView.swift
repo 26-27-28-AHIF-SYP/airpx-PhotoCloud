@@ -11,7 +11,7 @@ struct RootView: View {
         TabView {
             Tab(AppStrings.library, systemImage: "photo.on.rectangle.angled") {
                 NavigationStack {
-                    ContentView()
+                    LibraryView(photoLibrary: photoLibrary)
                         .toolbar {
                             settingsButton
                         }

@@ -1,6 +1,35 @@
 import Foundation
 import Observation
 @preconcurrency import Photos
+import UIKit
+
+enum LibrarySortOrder: String, CaseIterable, Identifiable {
+    case captureDate = "creationDate"
+    case dateAdded = "addedDate"
+
+    var id: Self { self }
+    var title: String { self == .captureDate ? AppStrings.sortCaptureDate : AppStrings.sortDateAdded }
+}
+
+enum LibraryMediaFilter: CaseIterable, Equatable, Identifiable {
+    case all
+    case photos
+    case videos
+
+    var id: Self { self }
+    var title: String {
+        switch self {
+        case .all: AppStrings.mediaAll
+        case .photos: AppStrings.mediaPhotos
+        case .videos: AppStrings.mediaVideos
+        }
+    }
+}
+
+enum LocalMediaType: Equatable, Sendable {
+    case photo
+    case video
+}
 
 struct PhotoLocation: Codable, Equatable, Sendable {
     let latitude: Double
@@ -12,14 +41,18 @@ struct LocalPhoto: Equatable, Identifiable, Sendable {
 
     let localIdentifier: String
     let creationDate: Date?
+    let addedDate: Date?
     let modificationDate: Date?
     let location: PhotoLocation?
     let pixelWidth: Int
     let pixelHeight: Int
+    let mediaType: LocalMediaType
+    let isFavorite: Bool
 
     init(asset: PHAsset) {
         localIdentifier = asset.localIdentifier
         creationDate = asset.creationDate
+        addedDate = asset.addedDate
         modificationDate = asset.modificationDate
         if let coordinate = asset.location?.coordinate {
             location = PhotoLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
@@ -28,6 +61,8 @@ struct LocalPhoto: Equatable, Identifiable, Sendable {
         }
         pixelWidth = asset.pixelWidth
         pixelHeight = asset.pixelHeight
+        mediaType = asset.mediaType == .video ? .video : .photo
+        isFavorite = asset.isFavorite
     }
 }
 
@@ -51,6 +86,7 @@ final class PhotoLibraryService: NSObject, PHPhotoLibraryChangeObserver {
     private(set) var authorizationStatus = PHPhotoLibrary.authorizationStatus(for: .readWrite)
     @ObservationIgnored private var observedAssets: PHFetchResult<PHAsset>?
     @ObservationIgnored private var changeHandler: (([LocalPhoto]) -> Void)?
+    @ObservationIgnored private let imageManager = PHCachingImageManager()
 
     func refreshAuthorizationStatus() {
         authorizationStatus = PHPhotoLibrary.authorizationStatus(for: .readWrite)
@@ -71,6 +107,122 @@ final class PhotoLibraryService: NSObject, PHPhotoLibraryChangeObserver {
             photos.append(LocalPhoto(asset: asset))
         }
         return photos
+    }
+
+    func fetchLibraryPhotos(
+        sortedBy sortOrder: LibrarySortOrder,
+        filteredBy filter: LibraryMediaFilter
+    ) -> [LocalPhoto] {
+        let options = PHFetchOptions()
+        options.sortDescriptors = [NSSortDescriptor(key: sortOrder.rawValue, ascending: false)]
+        switch filter {
+        case .all:
+            options.predicate = NSPredicate(
+                format: "mediaType == %d OR mediaType == %d",
+                PHAssetMediaType.image.rawValue,
+                PHAssetMediaType.video.rawValue
+            )
+        case .photos:
+            options.predicate = NSPredicate(format: "mediaType == %d", PHAssetMediaType.image.rawValue)
+        case .videos:
+            options.predicate = NSPredicate(format: "mediaType == %d", PHAssetMediaType.video.rawValue)
+        }
+
+        let results = PHAsset.fetchAssets(with: options)
+        var photos: [LocalPhoto] = []
+        photos.reserveCapacity(results.count)
+        results.enumerateObjects { asset, _, _ in
+            photos.append(LocalPhoto(asset: asset))
+        }
+        return photos
+    }
+
+    func requestThumbnail(
+        for photo: LocalPhoto,
+        targetSize: CGSize,
+        completion: @escaping (UIImage?) -> Void
+    ) -> PHImageRequestID {
+        guard let asset = fetchAsset(with: photo.localIdentifier) else {
+            completion(nil)
+            return PHInvalidImageRequestID
+        }
+        let options = PHImageRequestOptions()
+        options.deliveryMode = .opportunistic
+        options.resizeMode = .fast
+        options.isNetworkAccessAllowed = true
+        return imageManager.requestImage(
+            for: asset,
+            targetSize: targetSize,
+            contentMode: .aspectFill,
+            options: options
+        ) { image, _ in
+            completion(image)
+        }
+    }
+
+    func requestDisplayImage(
+        for photo: LocalPhoto,
+        targetSize: CGSize,
+        completion: @escaping (UIImage?) -> Void
+    ) -> PHImageRequestID {
+        guard let asset = fetchAsset(with: photo.localIdentifier) else {
+            completion(nil)
+            return PHInvalidImageRequestID
+        }
+        let options = PHImageRequestOptions()
+        options.deliveryMode = .highQualityFormat
+        options.resizeMode = .fast
+        options.isNetworkAccessAllowed = true
+        return imageManager.requestImage(
+            for: asset,
+            targetSize: targetSize,
+            contentMode: .aspectFit,
+            options: options
+        ) { image, _ in
+            completion(image)
+        }
+    }
+
+    func cancelImageRequest(_ requestID: PHImageRequestID) {
+        imageManager.cancelImageRequest(requestID)
+    }
+
+    func startCachingThumbnail(for photo: LocalPhoto, targetSize: CGSize) {
+        guard let asset = fetchAsset(with: photo.localIdentifier) else { return }
+        imageManager.startCachingImages(
+            for: [asset],
+            targetSize: targetSize,
+            contentMode: .aspectFill,
+            options: nil
+        )
+    }
+
+    func stopCachingThumbnail(for photo: LocalPhoto, targetSize: CGSize) {
+        guard let asset = fetchAsset(with: photo.localIdentifier) else { return }
+        imageManager.stopCachingImages(
+            for: [asset],
+            targetSize: targetSize,
+            contentMode: .aspectFill,
+            options: nil
+        )
+    }
+
+    func setFavorite(_ isFavorite: Bool, for photo: LocalPhoto) async throws {
+        guard let asset = fetchAsset(with: photo.localIdentifier) else {
+            throw PhotoLibraryError.assetUnavailable
+        }
+        try await PHPhotoLibrary.shared().performChanges {
+            PHAssetChangeRequest(for: asset).isFavorite = isFavorite
+        }
+    }
+
+    func delete(_ photo: LocalPhoto) async throws {
+        guard let asset = fetchAsset(with: photo.localIdentifier) else {
+            throw PhotoLibraryError.assetUnavailable
+        }
+        try await PHPhotoLibrary.shared().performChanges {
+            PHAssetChangeRequest.deleteAssets([asset] as NSArray)
+        }
     }
 
     func startObservingChanges(_ handler: @escaping ([LocalPhoto]) -> Void) {
@@ -133,6 +285,10 @@ final class PhotoLibraryService: NSObject, PHPhotoLibraryChangeObserver {
         let options = PHFetchOptions()
         options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
         return PHAsset.fetchAssets(with: .image, options: options)
+    }
+
+    private func fetchAsset(with localIdentifier: String) -> PHAsset? {
+        PHAsset.fetchAssets(withLocalIdentifiers: [localIdentifier], options: nil).firstObject
     }
 
     private func applyChanges(_ change: PHChange) {

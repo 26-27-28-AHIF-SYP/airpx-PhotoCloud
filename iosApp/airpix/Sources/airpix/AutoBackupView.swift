@@ -33,6 +33,10 @@ struct AutoBackupView: View {
 
             Section("Photo Library Access") {
                 Text(permissionDescription)
+                if photoLibrary.authorizationStatus == .notDetermined {
+                    Text(AppStrings.photoAccessRequiredForBackup)
+                        .foregroundStyle(.secondary)
+                }
                 if photoLibrary.authorizationStatus == .limited {
                     Button("Choose More Photos…") {
                         isLimitedPickerPresented = true
@@ -98,7 +102,14 @@ struct AutoBackupView: View {
                 try store.load()
                 photoLibrary.refreshAuthorizationStatus()
                 if isEnabled {
-                    await setAutoBackupEnabled(true, requestPermission: true)
+                    guard photoLibrary.authorizationStatus == .authorized
+                            || photoLibrary.authorizationStatus == .limited else {
+                        await setAutoBackupEnabled(false)
+                        errorMessage = AppStrings.photoAccessRequiredForBackup
+                        return
+                    }
+                    startObservingChanges()
+                    try await uploadQueue.syncNow()
                 }
             } catch {
                 errorMessage = error.localizedDescription
@@ -142,7 +153,7 @@ struct AutoBackupView: View {
     }
 
     @MainActor
-    private func setAutoBackupEnabled(_ enabled: Bool, requestPermission: Bool = false) async {
+    private func setAutoBackupEnabled(_ enabled: Bool) async {
         guard enabled else {
             isEnabled = false
             UserDefaults.standard.set(false, forKey: BackendConfig.autoBackupDefaultsKey)
@@ -151,19 +162,11 @@ struct AutoBackupView: View {
             return
         }
 
-        let status: PHAuthorizationStatus
-        if requestPermission || photoLibrary.authorizationStatus == .notDetermined {
-            status = await photoLibrary.requestAuthorization()
-        } else {
-            photoLibrary.refreshAuthorizationStatus()
-            status = photoLibrary.authorizationStatus
-        }
-
-        guard status == .authorized || status == .limited else {
+        photoLibrary.refreshAuthorizationStatus()
+        guard photoLibrary.authorizationStatus == .authorized
+                || photoLibrary.authorizationStatus == .limited else {
             isEnabled = false
-            UserDefaults.standard.set(false, forKey: BackendConfig.autoBackupDefaultsKey)
-            photoLibrary.stopObservingChanges()
-            uploadQueue.pauseAutoBackup()
+            errorMessage = AppStrings.photoAccessRequiredForBackup
             return
         }
 
@@ -191,10 +194,11 @@ struct AutoBackupView: View {
         defer { isSyncing = false }
 
         do {
-            if photoLibrary.authorizationStatus == .notDetermined {
-                _ = await photoLibrary.requestAuthorization()
-            } else {
-                photoLibrary.refreshAuthorizationStatus()
+            photoLibrary.refreshAuthorizationStatus()
+            guard photoLibrary.authorizationStatus == .authorized
+                    || photoLibrary.authorizationStatus == .limited else {
+                errorMessage = AppStrings.photoAccessRequiredForBackup
+                return
             }
             try await uploadQueue.syncNow(manual: true)
             errorMessage = nil
@@ -204,7 +208,7 @@ struct AutoBackupView: View {
     }
 }
 
-private struct LimitedLibraryPickerBridge: UIViewControllerRepresentable {
+struct LimitedLibraryPickerBridge: UIViewControllerRepresentable {
     @Binding var isPresented: Bool
     let onCompletion: () -> Void
 

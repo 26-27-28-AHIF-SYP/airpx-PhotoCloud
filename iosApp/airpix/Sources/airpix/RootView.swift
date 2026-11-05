@@ -20,10 +20,7 @@ struct RootView: View {
 
             Tab(AppStrings.collections, systemImage: "square.stack") {
                 NavigationStack {
-                    Text(AppStrings.collectionsPlaceholder)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .navigationTitle(AppStrings.collections)
+                    CollectionsView(photoLibrary: photoLibrary)
                         .toolbar {
                             settingsButton
                         }

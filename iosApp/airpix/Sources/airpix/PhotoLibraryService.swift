@@ -66,6 +66,13 @@ struct LocalPhoto: Equatable, Identifiable, Sendable {
     }
 }
 
+struct LocalAlbum: Equatable, Identifiable, Sendable {
+    let id: String
+    let title: String
+    let assetCount: Int
+    let keyPhoto: LocalPhoto?
+}
+
 enum PhotoLibraryError: LocalizedError {
     case assetUnavailable
     case originalResourceUnavailable
@@ -135,6 +142,66 @@ final class PhotoLibraryService: NSObject, PHPhotoLibraryChangeObserver {
             photos.append(LocalPhoto(asset: asset))
         }
         return photos
+    }
+
+    func fetchAlbums() -> [LocalAlbum] {
+        let collections = PHAssetCollection.fetchAssetCollections(
+            with: .album,
+            subtype: .any,
+            options: nil
+        )
+        var albums: [LocalAlbum] = []
+        collections.enumerateObjects { [authorizationStatus] collection, _, _ in
+            let options = PHFetchOptions()
+            options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+            options.predicate = NSPredicate(
+                format: "mediaType == %d OR mediaType == %d",
+                PHAssetMediaType.image.rawValue,
+                PHAssetMediaType.video.rawValue
+            )
+            let assets = PHAsset.fetchAssets(in: collection, options: options)
+            if authorizationStatus == .limited && assets.count == 0 { return }
+            let keyAsset = PHAsset.fetchKeyAssets(in: collection, options: options)?.firstObject
+                ?? assets.firstObject
+            albums.append(LocalAlbum(
+                id: collection.localIdentifier,
+                title: collection.localizedTitle ?? AppStrings.untitledAlbum,
+                assetCount: assets.count,
+                keyPhoto: keyAsset.map(LocalPhoto.init(asset:))
+            ))
+        }
+        return albums.sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
+    }
+
+    func fetchAlbumPhotos(
+        albumIdentifier: String,
+        sortedBy sortOrder: LibrarySortOrder = .captureDate
+    ) -> [LocalPhoto] {
+        guard let collection = PHAssetCollection.fetchAssetCollections(
+            withLocalIdentifiers: [albumIdentifier],
+            options: nil
+        ).firstObject else { return [] }
+        let options = PHFetchOptions()
+        options.sortDescriptors = [NSSortDescriptor(key: sortOrder.rawValue, ascending: false)]
+        options.predicate = NSPredicate(
+            format: "mediaType == %d OR mediaType == %d",
+            PHAssetMediaType.image.rawValue,
+            PHAssetMediaType.video.rawValue
+        )
+        return localPhotos(from: PHAsset.fetchAssets(in: collection, options: options))
+    }
+
+    func fetchFavoritePhotos(
+        sortedBy sortOrder: LibrarySortOrder = .captureDate
+    ) -> [LocalPhoto] {
+        let options = PHFetchOptions()
+        options.sortDescriptors = [NSSortDescriptor(key: sortOrder.rawValue, ascending: false)]
+        options.predicate = NSPredicate(
+            format: "isFavorite == YES AND (mediaType == %d OR mediaType == %d)",
+            PHAssetMediaType.image.rawValue,
+            PHAssetMediaType.video.rawValue
+        )
+        return localPhotos(from: PHAsset.fetchAssets(with: options))
     }
 
     func requestThumbnail(
@@ -289,6 +356,15 @@ final class PhotoLibraryService: NSObject, PHPhotoLibraryChangeObserver {
 
     private func fetchAsset(with localIdentifier: String) -> PHAsset? {
         PHAsset.fetchAssets(withLocalIdentifiers: [localIdentifier], options: nil).firstObject
+    }
+
+    private func localPhotos(from assets: PHFetchResult<PHAsset>) -> [LocalPhoto] {
+        var photos: [LocalPhoto] = []
+        photos.reserveCapacity(assets.count)
+        assets.enumerateObjects { asset, _, _ in
+            photos.append(LocalPhoto(asset: asset))
+        }
+        return photos
     }
 
     private func applyChanges(_ change: PHChange) {

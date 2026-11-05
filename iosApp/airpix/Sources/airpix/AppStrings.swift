@@ -4,6 +4,7 @@ enum AppStrings {
     static let search = "Suchen"
     static let settings = "Einstellungen"
     static let close = "Schließen"
+    static let done = "Fertig"
     static let allowPhotoAccess = "Zugriff erlauben"
     static let openSystemSettings = "Einstellungen öffnen"
     static let photoAccessExplanation = "AirPx benötigt Zugriff auf deine Mediathek, damit du deine Fotos hier ansehen kannst. Auto-Backup bleibt ausgeschaltet, bis du es aktivierst."

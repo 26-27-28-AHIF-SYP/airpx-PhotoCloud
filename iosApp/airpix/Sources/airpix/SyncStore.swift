@@ -27,6 +27,7 @@ final class SyncStore {
     private(set) var records: [String: SyncRecord] = [:]
     @ObservationIgnored private let fileURL: URL
     @ObservationIgnored private var isLoaded = false
+    @ObservationIgnored private var loadingTask: Task<[String: SyncRecord], Error>?
 
     var pendingCount: Int {
         records.values.filter { $0.status != .done }.count
@@ -40,19 +41,33 @@ final class SyncStore {
         self.fileURL = fileURL
     }
 
-    func load() throws {
+    func load() async throws {
         guard !isLoaded else { return }
-        guard FileManager.default.fileExists(atPath: fileURL.path) else {
-            isLoaded = true
-            return
+
+        let task: Task<[String: SyncRecord], Error>
+        if let loadingTask {
+            task = loadingTask
+        } else {
+            let fileURL = fileURL
+            task = Task.detached(priority: .utility) {
+                guard FileManager.default.fileExists(atPath: fileURL.path) else { return [:] }
+                let data = try Data(contentsOf: fileURL)
+                let savedRecords = try JSONDecoder().decode([SyncRecord].self, from: data)
+                return savedRecords.reduce(into: [:]) { result, record in
+                    result[record.localIdentifier] = record
+                }
+            }
+            loadingTask = task
         }
 
-        let data = try Data(contentsOf: fileURL)
-        let savedRecords = try JSONDecoder().decode([SyncRecord].self, from: data)
-        records = savedRecords.reduce(into: [:]) { result, record in
-            result[record.localIdentifier] = record
+        do {
+            records = try await task.value
+            isLoaded = true
+            loadingTask = nil
+        } catch {
+            loadingTask = nil
+            throw error
         }
-        isLoaded = true
     }
 
     @discardableResult

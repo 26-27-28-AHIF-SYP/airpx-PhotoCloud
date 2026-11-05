@@ -82,24 +82,26 @@ struct AutoBackupView: View {
         }
         .navigationTitle("Auto-Backup")
         .background {
-            LimitedLibraryPickerBridge(isPresented: $isLimitedPickerPresented) {
-                photoLibrary.refreshAuthorizationStatus()
-                if isEnabled {
-                    Task {
-                        do {
-                            try await uploadQueue.syncNow()
-                            errorMessage = nil
-                        } catch {
-                            errorMessage = error.localizedDescription
+            if isLimitedPickerPresented {
+                LimitedLibraryPickerBridge(isPresented: $isLimitedPickerPresented) {
+                    photoLibrary.refreshAuthorizationStatus()
+                    if isEnabled {
+                        Task {
+                            do {
+                                try await uploadQueue.syncNow()
+                                errorMessage = nil
+                            } catch {
+                                errorMessage = error.localizedDescription
+                            }
                         }
                     }
                 }
+                .frame(width: 0, height: 0)
             }
-            .frame(width: 0, height: 0)
         }
         .task {
             do {
-                try store.load()
+                try await store.load()
                 photoLibrary.refreshAuthorizationStatus()
                 if isEnabled {
                     guard photoLibrary.authorizationStatus == .authorized
@@ -109,7 +111,6 @@ struct AutoBackupView: View {
                         return
                     }
                     startObservingChanges()
-                    try await uploadQueue.syncNow()
                 }
             } catch {
                 errorMessage = error.localizedDescription

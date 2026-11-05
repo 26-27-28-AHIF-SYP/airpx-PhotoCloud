@@ -109,7 +109,7 @@ final class UploadQueue {
             throw UploadQueueError.photoAccessRequired
         }
 
-        try store.load()
+        try await store.load()
         for photo in photoLibrary.fetchVisiblePhotos() {
             try store.enqueue(photo)
         }
@@ -119,7 +119,7 @@ final class UploadQueue {
 
     func enqueueChangedPhotos(_ photos: [LocalPhoto]) async {
         do {
-            try store.load()
+            try await store.load()
             for photo in photos {
                 try store.enqueue(photo)
             }

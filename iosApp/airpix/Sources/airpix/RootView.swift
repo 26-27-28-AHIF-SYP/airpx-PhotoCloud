@@ -43,20 +43,14 @@ struct RootView: View {
             }
         }
         .sheet(isPresented: $isSettingsPresented) {
-            NavigationStack {
-                AutoBackupView(
-                    store: store,
-                    photoLibrary: photoLibrary,
-                    uploadQueue: uploadQueue
-                )
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button(AppStrings.close) {
-                            isSettingsPresented = false
-                        }
-                    }
-                }
-            }
+            SettingsSheetView(
+                store: store,
+                photoLibrary: photoLibrary,
+                uploadQueue: uploadQueue
+            )
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
+            .interactiveDismissDisabled(false)
         }
     }
 
@@ -68,6 +62,31 @@ struct RootView: View {
                 Image(systemName: "gearshape")
             }
             .accessibilityLabel(AppStrings.settings)
+        }
+    }
+}
+
+private struct SettingsSheetView: View {
+    let store: SyncStore
+    let photoLibrary: PhotoLibraryService
+    let uploadQueue: UploadQueue
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            AutoBackupView(
+                store: store,
+                photoLibrary: photoLibrary,
+                uploadQueue: uploadQueue
+            )
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(AppStrings.done) {
+                        dismiss()
+                    }
+                }
+            }
         }
     }
 }

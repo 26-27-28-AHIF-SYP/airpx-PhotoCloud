@@ -29,10 +29,7 @@ struct RootView: View {
 
             Tab(AppStrings.search, systemImage: "magnifyingglass", role: .search) {
                 NavigationStack {
-                    Text(AppStrings.searchPlaceholder)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .navigationTitle(AppStrings.search)
+                    SearchView(photoLibrary: photoLibrary)
                         .toolbar {
                             settingsButton
                         }

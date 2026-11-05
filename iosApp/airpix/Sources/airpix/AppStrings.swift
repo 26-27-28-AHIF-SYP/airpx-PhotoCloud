@@ -8,6 +8,11 @@ enum AppStrings {
     static let favoriteCount = "Fotos"
     static let albumPhotoCount = "Fotos"
     static let comingSoon = "Demnächst verfügbar"
+    static let searchPrompt = "Jahr, Monat oder Datum"
+    static let dateRange = "Zeitraum begrenzen"
+    static let fromDate = "Von"
+    static let toDate = "Bis"
+    static let aiSearchComingSoon = "KI-Suche kommt demnächst"
     static let noAlbums = "Keine Alben"
     static let noAlbumsDescription = "Auf diesem Gerät wurden keine Alben gefunden."
     static let emptyAlbum = "Dieses Album enthält keine sichtbaren Fotos."
@@ -46,5 +51,4 @@ enum AppStrings {
     static let error = "Fehler"
 
     static let collectionsPlaceholder = "Deine Sammlungen erscheinen hier."
-    static let searchPlaceholder = "Suche kommt in einer späteren Phase."
 }

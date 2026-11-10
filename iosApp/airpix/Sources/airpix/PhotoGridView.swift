@@ -11,44 +11,58 @@ struct PhotoGridView: View {
     @Environment(\.displayScale) private var displayScale
     @State private var selectedPhoto: LocalPhoto?
 
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 2), count: 3)
+    private let minimumCellSize: CGFloat = 80
+    private let spacing: CGFloat = 1
 
     var body: some View {
-        ScrollView {
-            if photos.isEmpty {
-                ContentUnavailableView(
-                    AppStrings.noPhotos,
-                    systemImage: "photo.on.rectangle.angled",
-                    description: Text(AppStrings.noPhotosDescription)
-                )
-                .frame(maxWidth: .infinity, minHeight: 300)
-            } else {
-                LazyVGrid(columns: columns, spacing: 2) {
-                    ForEach(photos) { photo in
-                        Button {
-                            selectedPhoto = photo
-                        } label: {
-                            PhotoThumbnailView(
-                                photo: photo,
-                                photoLibrary: photoLibrary,
-                                targetSize: CGSize(width: 360 * displayScale, height: 360 * displayScale)
-                            )
-                            .aspectRatio(1, contentMode: .fit)
-                            .clipped()
-                            .overlay(alignment: .bottomTrailing) {
-                                if photo.mediaType == .video {
-                                    Image(systemName: "video.fill")
-                                        .font(.caption)
-                                        .foregroundStyle(.white)
-                                        .padding(6)
-                                }
+        GeometryReader { geometry in
+            let gridWidth = geometry.size.width - spacing * 2
+            let columnCount = max(1, Int((gridWidth + spacing) / (minimumCellSize + spacing)))
+            let cellSize = (gridWidth - spacing * CGFloat(columnCount - 1)) / CGFloat(columnCount)
+            let columns = Array(repeating: GridItem(.flexible(), spacing: spacing), count: columnCount)
+
+            ScrollView {
+                if photos.isEmpty {
+                    ContentUnavailableView(
+                        AppStrings.noPhotos,
+                        systemImage: "photo.on.rectangle.angled",
+                        description: Text(AppStrings.noPhotosDescription)
+                    )
+                    .frame(maxWidth: .infinity, minHeight: 300)
+                } else {
+                    LazyVGrid(columns: columns, spacing: spacing) {
+                        ForEach(photos) { photo in
+                            Button {
+                                selectedPhoto = photo
+                            } label: {
+                                Color.clear
+                                    .aspectRatio(1, contentMode: .fit)
+                                    .overlay {
+                                        PhotoThumbnailView(
+                                            photo: photo,
+                                            photoLibrary: photoLibrary,
+                                            targetSize: CGSize(
+                                                width: cellSize * displayScale,
+                                                height: cellSize * displayScale
+                                            )
+                                        )
+                                    }
+                                    .clipped()
+                                    .overlay(alignment: .bottomTrailing) {
+                                        if photo.mediaType == .video {
+                                            Image(systemName: "video.fill")
+                                                .font(.caption)
+                                                .foregroundStyle(.white)
+                                                .padding(6)
+                                        }
+                                    }
                             }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(photo.creationDate?.formatted(date: .abbreviated, time: .shortened) ?? AppStrings.photo)
                         }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(photo.creationDate?.formatted(date: .abbreviated, time: .shortened) ?? AppStrings.photo)
                     }
+                    .padding(.horizontal, spacing)
                 }
-                .padding(.horizontal, 2)
             }
         }
         .sheet(item: $selectedPhoto, onDismiss: onDismiss) { photo in

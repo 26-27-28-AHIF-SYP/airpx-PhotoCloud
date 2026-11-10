@@ -47,12 +47,17 @@ iosApp/
     │   ├── AutoBackupView.swift
     │   ├── CollectionsView.swift
     │   ├── LibraryView.swift
+    │   ├── LiveServerAPI.swift
+    │   ├── MockServerAPI.swift
     │   ├── PhotoAccessPromptView.swift
     │   ├── PhotoDetailView.swift
     │   ├── PhotoGridView.swift
     │   ├── PhotoLibraryService.swift
     │   ├── RootView.swift
     │   ├── SearchView.swift
+    │   ├── ServerAPI.swift
+    │   ├── ServerConnectionView.swift
+    │   ├── ServerSession.swift
     │   ├── SyncStore.swift
     │   ├── UploadQueue.swift
     │   └── Resources/
@@ -72,8 +77,8 @@ iosApp/
 - Photo grids and album covers use `PHCachingImageManager` thumbnails; never request full-size images for grid cells or list rows. Full display images are reserved for photo detail.
 - Keep new German UI strings in `AppStrings.swift`. `PhotoGridView` is shared by Library, album, Favorites, and Search results; `PhotoDetailView` supplies their shared detail presentation.
 - Search uses SwiftUI's `.searchable` UI and filters on-device by capture-date text and an optional date range. Do not use `CLGeocoder`, network lookups, place names, or external search services. Do not add location filtering without first confirming a specific on-device method. AI search remains a placeholder.
-- Keep the backend base URL in `BackendConfig` (currently in `Sources/airpix/UploadQueue.swift`). The only upload route currently specified is the placeholder `POST /api/photos/upload`, marked with a TODO. Do not invent backend routes.
-- Store credentials and secrets in the Keychain; do not hard-code them. No Keychain implementation is present yet.
+- Server routes exist only if they are in the API contract at `../docs/api/openapi.yaml`; read the contract, but do not edit it from iOS tasks. Change the contract only when the user asks.
+- Keep server calls behind the `ServerAPI` protocol with live and debug-only mock implementations; store tokens and secrets in the Keychain, and never store or log passwords.
 
 ## Working agreement
 - Before large changes, list the files you plan to create or modify and wait for confirmation.

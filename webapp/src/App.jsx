@@ -109,6 +109,7 @@ const initialPhotos = [
     favorite: false,
     shared: true,
     sharedAlbumId: "weekend",
+    sharedBy: "Lukas",
   },
   {
     id: 5,
@@ -129,6 +130,7 @@ const initialPhotos = [
     favorite: false,
     shared: true,
     sharedAlbumId: "tyrol",
+    sharedBy: "Mia",
   },
   {
     id: 7,
@@ -167,6 +169,7 @@ const initialPhotos = [
     favorite: false,
     shared: true,
     sharedAlbumId: "family-2026",
+    sharedBy: "Anna",
   },
   {
     id: 11,
@@ -222,6 +225,11 @@ const utilityActions = [
   { label: "Einstellungen", icon: "settings" },
   { label: "Hilfe & Support", icon: "help" },
 ];
+
+const latestNotification = {
+  title: "Anna hat neue Fotos geteilt",
+  detail: "Familienzeit · vor 2 Std.",
+};
 
 function collectAlbumIds(album) {
   return [
@@ -303,13 +311,20 @@ function PhotoCard({ photo, onFavorite }) {
   );
 }
 
-function OverviewPhoto({ photo, onOpen }) {
+function OverviewPhoto({ photo, onOpen, context }) {
   return (
     <button className="overview-photo" onClick={onOpen} type="button">
       <img alt="" loading="lazy" src={photo.image} />
       <span className="overview-photo-info">
         <strong>{photo.title}</strong>
-        <span>{photo.date}</span>
+        {context ? (
+          <>
+            <span>{context}</span>
+            <span>{photo.date}</span>
+          </>
+        ) : (
+          <span>{photo.date}</span>
+        )}
       </span>
     </button>
   );
@@ -426,7 +441,11 @@ function App() {
   };
 
   const handleUtilityAction = (label) => {
-    showNotice(`${label} ist in dieser Dashboard-Vorschau noch nicht verbunden.`);
+    showNotice(
+      label === "Benachrichtigungen"
+        ? "Du bist auf dem neuesten Stand."
+        : `${label} ist in dieser Dashboard-Vorschau noch nicht verbunden.`,
+    );
   };
 
   const pageTitle = selectedAlbum
@@ -438,7 +457,9 @@ function App() {
         : activeView === "favorites"
           ? "Favoriten"
           : activeView === "shared"
-            ? "Geteilte Fotos"
+            ? selectedAlbum
+              ? getAlbumName(selectedAlbum, albumTree)
+              : "Geteilte Alben"
             : "Alle Fotos";
 
   const showOverview = activeView === "overview" && !selectedAlbum && !search.trim();
@@ -464,12 +485,6 @@ function App() {
           </span>
         </a>
 
-        <div className="workspace-switcher">
-          <span className="workspace-avatar">S</span>
-          <span>Mein Speicher</span>
-          <span className="online-dot" />
-        </div>
-
         <nav aria-label="Bibliothek" className="primary-nav">
           <button
             aria-current={activeView === "overview" && !selectedAlbum ? "page" : undefined}
@@ -488,6 +503,15 @@ function App() {
           >
             <Icon name="photos" size={19} />
             <span>Fotos</span>
+          </button>
+          <button
+            aria-current={activeView === "favorites" ? "page" : undefined}
+            className={`nav-item ${activeView === "favorites" ? "active" : ""}`}
+            onClick={() => showAllPhotos("favorites")}
+            type="button"
+          >
+            <Icon name="heart" size={19} />
+            <span>Favoriten</span>
           </button>
           <button
             aria-expanded={albumsOpen}
@@ -512,15 +536,6 @@ function App() {
               />
             </div>
           )}
-          <button
-            aria-current={activeView === "favorites" ? "page" : undefined}
-            className={`nav-item ${activeView === "favorites" ? "active" : ""}`}
-            onClick={() => showAllPhotos("favorites")}
-            type="button"
-          >
-            <Icon name="heart" size={19} />
-            <span>Favoriten</span>
-          </button>
         </nav>
 
         <div className="sidebar-bottom">
@@ -532,7 +547,7 @@ function App() {
           >
             <Icon name="shared" size={19} />
             <span>Teilen</span>
-            <span className="nav-count">3</span>
+            <span className="nav-count">{recentlySharedAlbums.length}</span>
           </button>
         </div>
       </aside>
@@ -551,23 +566,30 @@ function App() {
                 value={search}
               />
             </label>
-            <button
-              aria-label="Benachrichtigungen"
-              className="icon-button notification-button"
-              onClick={() => showNotice("Du bist auf dem neuesten Stand.")}
-              type="button"
-            >
-              <Icon name="bell" size={19} />
-              <span />
-            </button>
           </div>
         </header>
 
-        {showOverview ? (
+        {activeView === "shared" && !selectedAlbum && !search.trim() ? (
+          <section aria-labelledby="all-shared-albums-title" className="shared-library">
+            <div className="shared-library-heading">
+              <h2 id="all-shared-albums-title">Alle geteilten Alben</h2>
+              <span>{recentlySharedAlbums.length} Alben</span>
+            </div>
+            <div className="shared-library-grid">
+              {recentlySharedAlbums.map((album) => (
+                <SharedAlbumCard
+                  album={album}
+                  key={album.id}
+                  onOpen={() => openSharedAlbum(album.id)}
+                />
+              ))}
+            </div>
+          </section>
+        ) : showOverview ? (
           <section aria-label="Übersicht" className="overview-content">
             <section aria-labelledby="recent-photos-title" className="overview-section">
               <div className="overview-section-heading">
-                <h2 id="recent-photos-title">Zuletzt hinzugefügt</h2>
+                <h2 id="recent-photos-title">Zuletzt hinzugefügte Medien</h2>
                 <button
                   className="overview-link"
                   onClick={() => showAllPhotos("photos")}
@@ -587,28 +609,6 @@ function App() {
               </div>
             </section>
 
-            <section aria-labelledby="shared-albums-title" className="overview-section">
-              <div className="overview-section-heading">
-                <h2 id="shared-albums-title">Kürzlich geteilte Alben</h2>
-                <button
-                  className="overview-link"
-                  onClick={() => showAllPhotos("shared")}
-                  type="button"
-                >
-                  Alle geteilten <Icon name="chevron" size={15} />
-                </button>
-              </div>
-              <div className="shared-album-grid">
-                {recentlySharedAlbums.map((album) => (
-                  <SharedAlbumCard
-                    album={album}
-                    key={album.id}
-                    onOpen={() => openSharedAlbum(album.id)}
-                  />
-                ))}
-              </div>
-            </section>
-
             <section
               aria-labelledby="shared-photos-title"
               className="overview-section shared-photos-section"
@@ -620,13 +620,14 @@ function App() {
                   onClick={() => showAllPhotos("shared")}
                   type="button"
                 >
-                  Alle ansehen <Icon name="chevron" size={15} />
+                  Alle geteilten Alben <Icon name="chevron" size={15} />
                 </button>
               </div>
               <div className="overview-photo-grid">
                 {recentSharedPhotos.map((photo) => (
                   <OverviewPhoto
                     key={photo.id}
+                    context={`${recentlySharedAlbums.find((album) => album.id === photo.sharedAlbumId)?.name ?? "Geteiltes Album"} · von ${photo.sharedBy}`}
                     onOpen={() => openSharedAlbum(photo.sharedAlbumId)}
                     photo={photo}
                   />
@@ -681,6 +682,24 @@ function App() {
           <div className="profile-info">
             <h2>Sebastian M.</h2>
             <span>@sebastian</span>
+          </div>
+        </section>
+
+        <section aria-label="Benachrichtigungen" className="notification-card">
+          <div className="notification-card-icon">
+            <Icon name="bell" size={18} />
+            {latestNotification && <span />}
+          </div>
+          <div className="notification-card-copy">
+            <strong>Benachrichtigungen</strong>
+            {latestNotification ? (
+              <>
+                <span>{latestNotification.title}</span>
+                <span className="notification-detail">{latestNotification.detail}</span>
+              </>
+            ) : (
+              <span>Alles auf dem neuesten Stand.</span>
+            )}
           </div>
         </section>
 

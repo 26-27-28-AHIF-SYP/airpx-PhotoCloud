@@ -2,19 +2,19 @@
 
 :root {
   font-family: "DM Sans", sans-serif;
-  color: #443a37;
-  background: #fbf7f3;
+  color: #493735;
+  background: #fff7f2;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  --ink: #443a37;
-  --muted: #9c8c84;
-  --berry: #a64e58;
-  --berry-dark: #85414a;
-  --rose: #f3e5e2;
-  --line: rgb(135 100 80 / 12%);
-  --panel: rgb(255 253 250 / 90%);
-  --amber: #bd8150;
-  --plum: #765969;
+  --ink: #493735;
+  --muted: #a1847c;
+  --berry: #d94f4d;
+  --berry-dark: #b83c3b;
+  --rose: #f9ded8;
+  --line: rgb(177 77 57 / 14%);
+  --panel: rgb(255 251 248 / 92%);
+  --amber: #e48a35;
+  --clay: #e26448;
   --sage: #8b9b78;
 }
 
@@ -26,9 +26,9 @@ html {
   min-width: 360px;
   min-height: 100%;
   background:
-    radial-gradient(ellipse at 68% 4%, rgb(240 197 167 / 18%), transparent 29rem),
-    radial-gradient(ellipse at 13% 74%, rgb(213 162 169 / 12%), transparent 27rem),
-    #fbf7f3;
+    radial-gradient(ellipse at 68% 4%, rgb(255 151 105 / 25%), transparent 29rem),
+    radial-gradient(ellipse at 13% 74%, rgb(240 105 100 / 18%), transparent 27rem),
+    #fff7f2;
   scroll-behavior: smooth;
 }
 
@@ -37,8 +37,8 @@ body {
   min-height: 100vh;
   margin: 0;
   background:
-    radial-gradient(circle at 54% 26%, rgb(250 220 202 / 15%) 0 7rem, transparent 7.1rem),
-    radial-gradient(circle at 91% 81%, rgb(232 194 176 / 12%) 0 10rem, transparent 10.1rem);
+    radial-gradient(circle at 54% 26%, rgb(255 189 142 / 18%) 0 7rem, transparent 7.1rem),
+    radial-gradient(circle at 91% 81%, rgb(240 133 113 / 15%) 0 10rem, transparent 10.1rem);
 }
 
 button,
@@ -63,7 +63,7 @@ a {
 button:focus-visible,
 a:focus-visible,
 input:focus-visible {
-  outline: 3px solid rgb(190 111 112 / 44%);
+  outline: 3px solid rgb(217 79 77 / 48%);
   outline-offset: 3px;
 }
 
@@ -73,7 +73,7 @@ input:focus-visible {
   min-height: 100vh;
   max-width: 1920px;
   margin: 0 auto;
-  background: rgb(255 252 249 / 37%);
+  background: rgb(255 247 242 / 48%);
 }
 
 .left-panel,
@@ -108,8 +108,8 @@ input:focus-visible {
   width: 31px;
   height: 31px;
   border-radius: 48% 52% 46% 54%;
-  background: rgb(191 102 101 / 17%);
-  box-shadow: inset 0 0 0 1px rgb(172 97 91 / 12%);
+  background: rgb(224 76 72 / 22%);
+  box-shadow: inset 0 0 0 1px rgb(206 64 58 / 16%);
   transform: rotate(-9deg);
 }
 
@@ -118,8 +118,8 @@ input:focus-visible {
   display: block;
   border: 1px solid rgb(255 255 255 / 90%);
   border-radius: 50%;
-  background: rgb(191 102 101 / 38%);
-  box-shadow: inset -2px -2px 3px rgb(120 58 57 / 12%);
+  background: rgb(223 68 64 / 49%);
+  box-shadow: inset -2px -2px 3px rgb(159 43 39 / 16%);
 }
 
 .brand-bubbles i:nth-child(1) {
@@ -127,7 +127,7 @@ input:focus-visible {
   left: 5px;
   width: 13px;
   height: 13px;
-  background: rgb(208 140 94 / 67%);
+  background: rgb(239 126 55 / 78%);
 }
 
 .brand-bubbles i:nth-child(2) {
@@ -135,7 +135,7 @@ input:focus-visible {
   bottom: 5px;
   width: 15px;
   height: 15px;
-  background: rgb(168 91 103 / 63%);
+  background: rgb(220 77 75 / 76%);
 }
 
 .brand-bubbles i:nth-child(3) {
@@ -143,11 +143,11 @@ input:focus-visible {
   right: 5px;
   width: 7px;
   height: 7px;
-  background: rgb(219 178 107 / 83%);
+  background: rgb(242 170 63 / 92%);
 }
 
 .brand-name {
-  color: #51403c;
+  color: #533c39;
   font-family: "Manrope", sans-serif;
   font-size: 19px;
   font-weight: 800;
@@ -157,43 +157,6 @@ input:focus-visible {
 .brand-name span {
   color: var(--berry);
   font-weight: 500;
-}
-
-.workspace-switcher {
-  display: flex;
-  min-height: 48px;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 10px;
-  border: 1px solid rgb(171 123 99 / 13%);
-  border-radius: 15px;
-  background: rgb(255 255 255 / 62%);
-  color: #66544c;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.workspace-avatar {
-  display: grid;
-  width: 30px;
-  height: 30px;
-  place-items: center;
-  border: 1px solid rgb(190 129 80 / 15%);
-  border-radius: 50%;
-  background: rgb(220 172 114 / 24%);
-  color: #9b673b;
-  font-family: "Manrope", sans-serif;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.online-dot {
-  width: 7px;
-  height: 7px;
-  margin-left: auto;
-  border-radius: 50%;
-  background: #99a582;
-  box-shadow: 0 0 0 3px rgb(153 165 130 / 13%);
 }
 
 .primary-nav {
@@ -211,7 +174,7 @@ input:focus-visible {
   border: 0;
   border-radius: 13px;
   background: transparent;
-  color: #82736c;
+  color: #8d6962;
   cursor: pointer;
   font-size: 12px;
   font-weight: 500;
@@ -223,13 +186,13 @@ input:focus-visible {
 }
 
 .nav-item:hover {
-  background: rgb(229 197 178 / 18%);
+  background: rgb(245 153 112 / 20%);
   color: var(--berry-dark);
 }
 
 .nav-item.active {
-  background: rgb(183 104 103 / 12%);
-  box-shadow: inset 0 0 0 1px rgb(183 104 103 / 7%);
+  background: rgb(217 79 77 / 15%);
+  box-shadow: inset 0 0 0 1px rgb(217 79 77 / 10%);
   color: var(--berry-dark);
   font-weight: 700;
 }
@@ -247,7 +210,7 @@ input:focus-visible {
 }
 
 .tree-chevron {
-  color: #a5948a;
+  color: #ba8578;
   transform: rotate(90deg);
   transition: transform 160ms ease;
 }
@@ -261,7 +224,7 @@ input:focus-visible {
   gap: 2px;
   margin: 0 0 6px 15px;
   padding: 4px 0 5px 9px;
-  border-left: 1px solid rgb(175 128 107 / 23%);
+  border-left: 1px solid rgb(197 102 73 / 27%);
   animation: tree-open 170ms ease-out;
 }
 
@@ -292,7 +255,7 @@ input:focus-visible {
   border: 0;
   border-radius: 9px;
   background: transparent;
-  color: #93827a;
+  color: #9a7169;
   cursor: pointer;
   font-size: 10px;
   text-align: left;
@@ -300,7 +263,7 @@ input:focus-visible {
 
 .album-tree-item:hover,
 .album-tree-item.selected {
-  background: rgb(221 177 144 / 17%);
+  background: rgb(246 169 111 / 22%);
   color: var(--berry-dark);
 }
 
@@ -316,13 +279,12 @@ input:focus-visible {
 
 .tree-folder {
   flex: 0 0 auto;
-  color: #ba8c67;
+  color: #d47c3d;
 }
 
 .sidebar-bottom {
   margin-top: auto;
   padding-top: 12px;
-  border-top: 1px solid var(--line);
 }
 
 .share-link {
@@ -336,8 +298,8 @@ input:focus-visible {
   margin-left: auto;
   place-items: center;
   border-radius: 50%;
-  background: rgb(189 129 80 / 12%);
-  color: #a16d47;
+  background: rgb(228 138 53 / 15%);
+  color: #b96730;
   font-size: 10px;
 }
 
@@ -356,14 +318,14 @@ input:focus-visible {
   gap: 20px;
   padding: 0 34px;
   border-bottom: 1px solid var(--line);
-  background: rgb(255 251 247 / 75%);
+  background: rgb(255 250 246 / 82%);
   backdrop-filter: blur(18px);
 }
 
 .topbar h1 {
   overflow: hidden;
   margin: 0;
-  color: #57443e;
+  color: #62413c;
   font-family: "Manrope", sans-serif;
   font-size: 20px;
   font-weight: 700;
@@ -385,10 +347,10 @@ input:focus-visible {
   align-items: center;
   gap: 9px;
   padding: 0 11px;
-  border: 1px solid rgb(168 126 102 / 13%);
+  border: 1px solid rgb(193 91 68 / 15%);
   border-radius: 22px;
-  background: rgb(255 255 255 / 75%);
-  color: #a58f83;
+  background: rgb(255 255 255 / 80%);
+  color: #ae7f72;
   transition:
     border-color 150ms ease,
     background 150ms ease,
@@ -396,9 +358,9 @@ input:focus-visible {
 }
 
 .search-field:focus-within {
-  border-color: rgb(177 103 101 / 40%);
-  background: #fffdfa;
-  box-shadow: 0 0 0 3px rgb(177 103 101 / 7%);
+  border-color: rgb(217 79 77 / 48%);
+  background: #fffdfb;
+  box-shadow: 0 0 0 3px rgb(217 79 77 / 9%);
 }
 
 .search-field input {
@@ -413,7 +375,7 @@ input:focus-visible {
 }
 
 .search-field input::placeholder {
-  color: #b4a49a;
+  color: #b99388;
 }
 
 .icon-button {
@@ -423,27 +385,16 @@ input:focus-visible {
   height: 36px;
   flex: 0 0 auto;
   place-items: center;
-  border: 1px solid rgb(168 126 102 / 13%);
+  border: 1px solid rgb(193 91 68 / 15%);
   border-radius: 50%;
-  background: rgb(255 255 255 / 70%);
-  color: #90766a;
+  background: rgb(255 255 255 / 76%);
+  color: #a66658;
   cursor: pointer;
 }
 
 .icon-button:hover {
-  background: #f5e9e3;
+  background: #fce6df;
   color: var(--berry);
-}
-
-.notification-button > span {
-  position: absolute;
-  top: 7px;
-  right: 7px;
-  width: 6px;
-  height: 6px;
-  border: 1px solid #fffaf7;
-  border-radius: 50%;
-  background: #d49565;
 }
 
 .gallery {
@@ -455,6 +406,38 @@ input:focus-visible {
   display: grid;
   gap: 29px;
   padding: 23px 28px 32px;
+}
+
+.shared-library {
+  min-height: calc(100vh - 72px);
+  padding: 25px 28px;
+}
+
+.shared-library-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.shared-library-heading h2 {
+  margin: 0;
+  color: #68443f;
+  font-family: "Manrope", sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.shared-library-heading > span {
+  color: #aa7f73;
+  font-size: 10px;
+}
+
+.shared-library-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .overview-section {
@@ -471,7 +454,7 @@ input:focus-visible {
 
 .overview-section-heading h2 {
   margin: 0;
-  color: #614c44;
+  color: #68443f;
   font-family: "Manrope", sans-serif;
   font-size: 15px;
   font-weight: 700;
@@ -510,10 +493,10 @@ input:focus-visible {
   overflow: hidden;
   min-width: 0;
   padding: 5px;
-  border: 1px solid rgb(167 117 94 / 11%);
+  border: 1px solid rgb(193 91 68 / 14%);
   border-radius: 17px;
   background: rgb(255 253 250 / 63%);
-  box-shadow: 0 5px 17px rgb(109 75 58 / 4%);
+  box-shadow: 0 5px 17px rgb(147 67 49 / 5%);
   cursor: pointer;
   text-align: left;
   transition:
@@ -523,8 +506,8 @@ input:focus-visible {
 }
 
 .overview-photo:hover {
-  border-color: rgb(176 112 102 / 25%);
-  box-shadow: 0 9px 22px rgb(109 75 58 / 9%);
+  border-color: rgb(217 79 77 / 35%);
+  box-shadow: 0 9px 22px rgb(147 67 49 / 11%);
   transform: translateY(-2px);
 }
 
@@ -533,7 +516,7 @@ input:focus-visible {
   width: 100%;
   aspect-ratio: 1.28;
   border-radius: 12px;
-  background: #eadbd2;
+  background: #f2d5ca;
   object-fit: cover;
 }
 
@@ -553,20 +536,14 @@ input:focus-visible {
 }
 
 .overview-photo-info strong {
-  color: #604d45;
+  color: #70443e;
   font-size: 10px;
   font-weight: 600;
 }
 
 .overview-photo-info span {
-  color: #a38e82;
+  color: #aa7f73;
   font-size: 9px;
-}
-
-.shared-album-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
 }
 
 .shared-album-card {
@@ -576,7 +553,7 @@ input:focus-visible {
   align-items: center;
   gap: 9px;
   padding: 8px;
-  border: 1px solid rgb(167 117 94 / 11%);
+  border: 1px solid rgb(193 91 68 / 14%);
   border-radius: 16px;
   background: rgb(255 253 250 / 66%);
   cursor: pointer;
@@ -588,7 +565,7 @@ input:focus-visible {
 }
 
 .shared-album-card:hover {
-  border-color: rgb(176 112 102 / 25%);
+  border-color: rgb(217 79 77 / 35%);
   background: rgb(255 253 250 / 90%);
   transform: translateY(-2px);
 }
@@ -598,7 +575,7 @@ input:focus-visible {
   width: 61px;
   height: 61px;
   border-radius: 12px;
-  background-color: #eadbd2;
+  background-color: #f2d5ca;
   background-image: var(--album-cover);
   background-position: center;
   background-size: cover;
@@ -620,23 +597,23 @@ input:focus-visible {
 }
 
 .shared-album-info strong {
-  color: #604d45;
+  color: #70443e;
   font-size: 10px;
   font-weight: 600;
 }
 
 .shared-album-info span {
-  color: #a18d82;
+  color: #aa7f73;
   font-size: 9px;
 }
 
 .shared-album-info .shared-album-activity {
-  color: #b17a61;
+  color: #cf6840;
   font-size: 8px;
 }
 
 .shared-album-chevron {
-  color: #b69a8b;
+  color: #c28f80;
   transform: rotate(180deg);
 }
 
@@ -650,10 +627,10 @@ input:focus-visible {
 .photo-card {
   min-width: 0;
   padding: 6px;
-  border: 1px solid rgb(167 117 94 / 10%);
+  border: 1px solid rgb(193 91 68 / 13%);
   border-radius: 22px;
   background: rgb(255 253 250 / 60%);
-  box-shadow: 0 8px 23px rgb(109 75 58 / 5%);
+  box-shadow: 0 8px 23px rgb(147 67 49 / 6%);
   transition:
     border-color 180ms ease,
     box-shadow 180ms ease,
@@ -661,8 +638,8 @@ input:focus-visible {
 }
 
 .photo-card:hover {
-  border-color: rgb(176 112 102 / 25%);
-  box-shadow: 0 13px 28px rgb(109 75 58 / 11%);
+  border-color: rgb(217 79 77 / 35%);
+  box-shadow: 0 13px 28px rgb(147 67 49 / 12%);
   transform: translateY(-3px);
 }
 
@@ -673,8 +650,8 @@ input:focus-visible {
   border-radius: 17px;
   background:
     radial-gradient(circle at 27% 24%, rgb(255 255 255 / 74%) 0 10%, transparent 11%),
-    radial-gradient(circle at 77% 73%, rgb(190 123 106 / 20%) 0 19%, transparent 20%),
-    #eadbd2;
+    radial-gradient(circle at 77% 73%, rgb(233 91 75 / 25%) 0 19%, transparent 20%),
+    #f2d5ca;
 }
 
 .photo-image {
@@ -697,10 +674,10 @@ input:focus-visible {
   width: 33px;
   height: 33px;
   place-items: center;
-  border: 1px solid rgb(255 255 255 / 72%);
+  border: 1px solid rgb(255 255 255 / 82%);
   border-radius: 50%;
-  background: rgb(255 251 248 / 74%);
-  color: #886b64;
+  background: rgb(255 249 245 / 82%);
+  color: #a45b51;
   cursor: pointer;
   opacity: 0;
   backdrop-filter: blur(8px);
@@ -721,11 +698,11 @@ input:focus-visible {
 }
 
 .photo-favorite.is-favorite {
-  color: #ab5a5d;
+  color: #d94f4d;
 }
 
 .photo-favorite.is-favorite svg {
-  fill: rgb(171 90 93 / 24%);
+  fill: rgb(217 79 77 / 24%);
 }
 
 .empty-state {
@@ -735,14 +712,14 @@ input:focus-visible {
   align-items: center;
   justify-content: center;
   gap: 13px;
-  border: 1px dashed rgb(161 117 94 / 24%);
+  border: 1px dashed rgb(193 91 68 / 28%);
   border-radius: 24px;
-  background: rgb(255 253 250 / 46%);
-  color: #a87b6d;
+  background: rgb(255 250 246 / 62%);
+  color: #c66c56;
 }
 
 .empty-state strong {
-  color: #765d54;
+  color: #804b43;
   font-size: 13px;
   font-weight: 600;
 }
@@ -765,20 +742,20 @@ input:focus-visible {
 
 .profile-card {
   overflow: hidden;
-  border: 1px solid rgb(167 117 94 / 12%);
+  border: 1px solid rgb(193 91 68 / 15%);
   border-radius: 19px;
   background: rgb(255 255 255 / 73%);
-  box-shadow: 0 8px 24px rgb(109 75 58 / 5%);
+  box-shadow: 0 8px 24px rgb(147 67 49 / 6%);
 }
 
 .profile-cover {
   position: relative;
   height: 86px;
   background:
-    radial-gradient(circle at 22% 30%, rgb(255 255 255 / 38%) 0 21px, transparent 22px),
-    radial-gradient(circle at 81% 75%, rgb(139 89 91 / 20%) 0 34px, transparent 35px),
-    radial-gradient(circle at 67% 12%, rgb(218 167 119 / 37%) 0 17px, transparent 18px),
-    linear-gradient(125deg, rgb(196 126 110 / 32%), rgb(216 174 132 / 32%) 53%, rgb(163 132 133 / 29%));
+    radial-gradient(circle at 22% 30%, rgb(255 255 255 / 50%) 0 21px, transparent 22px),
+    radial-gradient(circle at 81% 75%, rgb(217 79 77 / 30%) 0 34px, transparent 35px),
+    radial-gradient(circle at 67% 12%, rgb(244 157 68 / 47%) 0 17px, transparent 18px),
+    linear-gradient(125deg, rgb(230 91 78 / 40%), rgb(244 157 68 / 42%) 53%, rgb(234 126 87 / 38%));
 }
 
 .profile-avatar {
@@ -793,8 +770,8 @@ input:focus-visible {
   border-radius: 50%;
   background:
     radial-gradient(circle at 32% 28%, rgb(255 255 255 / 78%) 0 7px, transparent 8px),
-    linear-gradient(145deg, #d29d79, #a7585c);
-  box-shadow: 0 4px 11px rgb(119 66 64 / 15%);
+    linear-gradient(145deg, #ee9854, #cf4c50);
+  box-shadow: 0 4px 11px rgb(174 67 60 / 20%);
   color: #fffaf7;
   font-family: "Manrope", sans-serif;
   font-size: 18px;
@@ -811,8 +788,8 @@ input:focus-visible {
   place-items: center;
   border: 1px solid rgb(255 255 255 / 76%);
   border-radius: 50%;
-  background: rgb(255 253 250 / 66%);
-  color: #785d54;
+  background: rgb(255 250 246 / 80%);
+  color: #994c43;
   cursor: pointer;
   backdrop-filter: blur(8px);
 }
@@ -823,7 +800,7 @@ input:focus-visible {
 
 .profile-info h2 {
   margin: 0 0 3px;
-  color: #54413d;
+  color: #60413d;
   font-family: "Manrope", sans-serif;
   font-size: 14px;
   font-weight: 700;
@@ -831,7 +808,7 @@ input:focus-visible {
 }
 
 .profile-info span {
-  color: #a18d82;
+  color: #aa7f73;
   font-size: 10px;
 }
 
@@ -841,7 +818,7 @@ input:focus-visible {
 
 .utility-section h2 {
   margin: 0 0 11px 5px;
-  color: #765e54;
+  color: #794a42;
   font-family: "Manrope", sans-serif;
   font-size: 12px;
   font-weight: 700;
@@ -861,7 +838,7 @@ input:focus-visible {
   border: 0;
   border-radius: 12px;
   background: transparent;
-  color: #88766d;
+  color: #956c62;
   cursor: pointer;
   text-align: left;
   transition:
@@ -870,7 +847,7 @@ input:focus-visible {
 }
 
 .utility-item:hover {
-  background: rgb(231 197 177 / 20%);
+  background: rgb(245 153 112 / 22%);
   color: var(--berry-dark);
 }
 
@@ -881,11 +858,73 @@ input:focus-visible {
 }
 
 .utility-item > svg:first-child {
-  color: #a97862;
+  color: #cb6748;
+}
+
+.notification-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  margin-top: 15px;
+  padding: 13px 12px;
+  border: 1px solid rgb(193 91 68 / 15%);
+  border-radius: 17px;
+  background: rgb(255 255 255 / 73%);
+  box-shadow: 0 6px 19px rgb(147 67 49 / 5%);
+}
+
+.notification-card-icon {
+  position: relative;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgb(217 79 77 / 10%);
+  border-radius: 12px;
+  background: rgb(217 79 77 / 10%);
+  color: var(--berry);
+}
+
+.notification-card-icon > span {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 6px;
+  height: 6px;
+  border: 1px solid #fffaf7;
+  border-radius: 50%;
+  background: #e58b39;
+}
+
+.notification-card-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 1px;
+}
+
+.notification-card-copy strong {
+  margin-bottom: 1px;
+  color: #794a42;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.notification-card-copy > span {
+  color: #8d6962;
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.notification-card-copy .notification-detail {
+  color: #ad8175;
+  font-size: 8px;
 }
 
 .utility-chevron {
-  color: #b6a49a;
+  color: #bd9387;
   transform: rotate(180deg);
 }
 
@@ -899,14 +938,14 @@ input:focus-visible {
   border: 0;
   border-radius: 11px;
   background: transparent;
-  color: #9a8277;
+  color: #a46c5f;
   cursor: pointer;
   font-size: 11px;
   text-align: left;
 }
 
 .logout-button:hover {
-  background: rgb(171 90 93 / 9%);
+  background: rgb(217 79 77 / 12%);
   color: var(--berry-dark);
 }
 
@@ -917,11 +956,11 @@ input:focus-visible {
   bottom: 22px;
   max-width: min(380px, calc(100vw - 32px));
   padding: 12px 16px;
-  border: 1px solid rgb(164 105 93 / 18%);
+  border: 1px solid rgb(193 73 60 / 23%);
   border-radius: 16px;
-  background: rgb(255 253 250 / 93%);
-  box-shadow: 0 10px 30px rgb(88 57 47 / 13%);
-  color: #76514c;
+  background: rgb(255 251 248 / 95%);
+  box-shadow: 0 10px 30px rgb(137 57 45 / 16%);
+  color: #85453d;
   font-size: 12px;
   backdrop-filter: blur(12px);
   animation: toast-in 180ms ease-out;
@@ -968,6 +1007,15 @@ input:focus-visible {
   .gallery {
     padding-right: 19px;
     padding-left: 19px;
+  }
+
+  .shared-library {
+    padding-right: 19px;
+    padding-left: 19px;
+  }
+
+  .shared-library-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .photo-grid {
@@ -1051,10 +1099,6 @@ input:focus-visible {
     font-size: 17px;
   }
 
-  .workspace-switcher {
-    display: none;
-  }
-
   .primary-nav {
     display: flex;
     flex-wrap: wrap;
@@ -1081,13 +1125,8 @@ input:focus-visible {
 
   .album-tree {
     flex: 0 0 100%;
-    order: 1;
     margin: 0 4px 5px;
     padding-left: 7px;
-  }
-
-  .primary-nav > .nav-item:last-child {
-    order: 2;
   }
 
   .album-tree-item {
@@ -1108,7 +1147,7 @@ input:focus-visible {
     width: auto;
     min-height: 31px;
     padding: 0 9px;
-    background: rgb(183 104 103 / 10%);
+    background: rgb(217 79 77 / 13%);
     color: var(--berry-dark);
   }
 
@@ -1158,14 +1197,19 @@ input:focus-visible {
     font-size: 10px;
   }
 
-  .notification-button {
-    width: 33px;
-    height: 33px;
-  }
-
   .gallery {
     min-height: auto;
     padding: 14px 12px 20px;
+  }
+
+  .shared-library {
+    min-height: auto;
+    padding: 16px 12px 22px;
+  }
+
+  .shared-library-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
   }
 
   .overview-content {
@@ -1180,21 +1224,6 @@ input:focus-visible {
   .overview-photo-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
-  }
-
-  .shared-album-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 7px;
-  }
-
-  .shared-album-card {
-    grid-template-columns: 52px minmax(0, 1fr) 14px;
-    padding: 6px;
-  }
-
-  .shared-album-cover {
-    width: 52px;
-    height: 52px;
   }
 
   .photo-grid {

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="albums">Alben</string>
+    <string name="app_name">AirPx Photo Cloud</string>
+    <string name="auto_backup">Auto-Backup</string>
+    <string name="close">Schließen</string>
+    <string name="collections">Sammlungen</string>
+    <string name="coming_soon">Demnächst verfügbar</string>
+    <string name="done">Fertig</string>
+    <string name="favorites">Favoriten</string>
+    <string name="library">Mediathek</string>
+    <string name="people_and_pets">Personen &amp; Haustiere</string>
+    <string name="search">Suchen</string>
+    <string name="server_connection">Serververbindung</string>
+    <string name="settings">Einstellungen</string>
+    <style name="Theme.AirPxPhotoCloud" parent="android:Theme.Material.Light.NoActionBar"/>
+</resources>

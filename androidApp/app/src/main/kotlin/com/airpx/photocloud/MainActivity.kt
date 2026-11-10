@@ -37,14 +37,14 @@ import com.airpx.photocloud.ui.screens.photos.FavoritesScreen
 import com.airpx.photocloud.ui.screens.photos.LibraryScreen
 import com.airpx.photocloud.ui.screens.photos.PhotoDetailScreen
 import com.airpx.photocloud.ui.screens.photos.SearchScreen
-import com.airpx.photocloud.ui.screens.settings.AutoBackupScreen
+import com.airpx.photocloud.ui.screens.sync.AutoBackupScreen
 import com.airpx.photocloud.ui.screens.settings.ServerConnectionScreen
 import com.airpx.photocloud.ui.screens.settings.SettingsScreen
 import com.airpx.photocloud.ui.theme.AirPxTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate()
+        super.onCreate(savedInstanceState)
         setContent {
             AirPxTheme {
                 AirPxAppShell()

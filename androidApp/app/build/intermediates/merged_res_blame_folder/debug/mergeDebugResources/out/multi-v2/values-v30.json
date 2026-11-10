@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.airpx.photocloud.app-mergeDebugResources-61:/values-v30/values-v30.xml",
+            "map": [
+                {
+                    "source": "/home/felix/.gradle/caches/8.13/transforms/075dad1d9038925b9a2e1951c12c5ea5/transformed/material3-release/res/values-v30/values-v30.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "72",
+                        "endOffsets": "123"
+                    }
+                }
+            ]
+        }
+    ]
+}

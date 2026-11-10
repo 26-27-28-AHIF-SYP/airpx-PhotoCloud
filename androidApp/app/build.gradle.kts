@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.airpx.photocloud"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.airpx.photocloud"
@@ -33,6 +33,9 @@ android {
     }
     kotlinOptions {
         jvmTarget = "17"
+    }
+    kotlin {
+        jvmToolchain(17)
     }
     buildFeatures {
         compose = true

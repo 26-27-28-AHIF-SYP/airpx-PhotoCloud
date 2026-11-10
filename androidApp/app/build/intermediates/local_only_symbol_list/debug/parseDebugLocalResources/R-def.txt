@@ -1,0 +1,16 @@
+R_DEF: Internal format may change without notice
+local
+string albums
+string app_name
+string auto_backup
+string close
+string collections
+string coming_soon
+string done
+string favorites
+string library
+string people_and_pets
+string search
+string server_connection
+string settings
+style Theme.AirPxPhotoCloud

@@ -43,3 +43,14 @@ nb-configuration.xml
 /.quarkus/cli/plugins/
 # TLS Certificates
 .certs/
+
+# Android / Gradle Build Artifacts
+.gradle/
+/androidApp/.gradle/
+/androidApp/build/
+/androidApp/app/build/
+/androidApp/local.properties
+local.properties
+*.apk
+*.aar
+

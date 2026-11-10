@@ -7,14 +7,17 @@ struct airpixApp: App {
     private let store: SyncStore
     private let photoLibrary: PhotoLibraryService
     private let uploadQueue: UploadQueue
+    private let serverSession: ServerSession
 
     init() {
         let store = SyncStore()
         let photoLibrary = PhotoLibraryService()
         let uploadQueue = UploadQueue(store: store, photoLibrary: photoLibrary)
+        let serverSession = ServerSession()
         self.store = store
         self.photoLibrary = photoLibrary
         self.uploadQueue = uploadQueue
+        self.serverSession = serverSession
         uploadQueue.registerBackgroundProcessingTask()
     }
 
@@ -23,7 +26,8 @@ struct airpixApp: App {
             RootView(
                 store: store,
                 photoLibrary: photoLibrary,
-                uploadQueue: uploadQueue
+                uploadQueue: uploadQueue,
+                serverSession: serverSession
             )
         }
     }

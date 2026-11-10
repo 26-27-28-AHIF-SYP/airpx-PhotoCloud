@@ -28,11 +28,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import com.airpx.photocloud.data.mediastore.MediaStoreScanner
+import com.airpx.photocloud.domain.model.PhotoItem
 import com.airpx.photocloud.ui.navigation.Screen
 import com.airpx.photocloud.ui.screens.albums.AlbumsScreen
 import com.airpx.photocloud.ui.screens.albums.CollectionsScreen
 import com.airpx.photocloud.ui.screens.photos.FavoritesScreen
 import com.airpx.photocloud.ui.screens.photos.LibraryScreen
+import com.airpx.photocloud.ui.screens.photos.PhotoDetailScreen
 import com.airpx.photocloud.ui.screens.photos.SearchScreen
 import com.airpx.photocloud.ui.screens.settings.AutoBackupScreen
 import com.airpx.photocloud.ui.screens.settings.ServerConnectionScreen
@@ -55,6 +58,8 @@ class MainActivity : ComponentActivity() {
 fun AirPxAppShell() {
     val context = LocalContext.current
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Library) }
+    var selectedPhotoId by remember { mutableStateOf<String?>(null) }
+    var loadedPhotos by remember { mutableStateOf<List<PhotoItem>>(emptyList()) }
 
     // Check media permission
     var hasPhotoPermission by remember {
@@ -102,89 +107,109 @@ fun AirPxAppShell() {
         Screen.Search to "Suchen"
     )
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        when (currentScreen) {
-                            Screen.Library -> "Mediathek"
-                            Screen.Collections -> "Sammlungen"
-                            Screen.Search -> "Suchen"
-                            Screen.Settings -> "Einstellungen"
-                            Screen.ServerConnection -> "Serververbindung"
-                            Screen.AutoBackup -> "Auto-Backup"
-                            Screen.Albums -> "Alben"
-                            Screen.Favorites -> "Favoriten"
-                            else -> "AirPx"
+    if (selectedPhotoId != null) {
+        PhotoDetailScreen(
+            photos = loadedPhotos,
+            initialPhotoId = selectedPhotoId!!,
+            onClose = { selectedPhotoId = null },
+            onDeletePhoto = { deleted ->
+                loadedPhotos = loadedPhotos.filter { it.id != deleted.id }
+                selectedPhotoId = null
+            }
+        )
+    } else {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            when (currentScreen) {
+                                Screen.Library -> "Mediathek"
+                                Screen.Collections -> "Sammlungen"
+                                Screen.Search -> "Suchen"
+                                Screen.Settings -> "Einstellungen"
+                                Screen.ServerConnection -> "Serververbindung"
+                                Screen.AutoBackup -> "Auto-Backup"
+                                Screen.Albums -> "Alben"
+                                Screen.Favorites -> "Favoriten"
+                                else -> "AirPx"
+                            }
+                        )
+                    },
+                    actions = {
+                        if (currentScreen in listOf(Screen.Library, Screen.Collections, Screen.Search)) {
+                            IconButton(onClick = { currentScreen = Screen.Settings }) {
+                                Icon(
+                                    imageVector = Icons.Default.Settings,
+                                    contentDescription = "Einstellungen"
+                                )
+                            }
                         }
-                    )
-                },
-                actions = {
-                    if (currentScreen in listOf(Screen.Library, Screen.Collections, Screen.Search)) {
-                        IconButton(onClick = { currentScreen = Screen.Settings }) {
-                            Icon(
-                                imageVector = Icons.Default.Settings,
-                                contentDescription = "Einstellungen"
+                    }
+                )
+            },
+            bottomBar = {
+                if (currentScreen in bottomNavItems.map { it.first }) {
+                    NavigationBar {
+                        bottomNavItems.forEach { (screen, label) ->
+                            NavigationBarItem(
+                                selected = currentScreen == screen,
+                                onClick = { currentScreen = screen },
+                                icon = {
+                                    screen.icon?.let { icon ->
+                                        Icon(imageVector = icon, contentDescription = label)
+                                    }
+                                },
+                                label = { Text(label) }
                             )
                         }
                     }
                 }
-            )
-        },
-        bottomBar = {
-            if (currentScreen in bottomNavItems.map { it.first }) {
-                NavigationBar {
-                    bottomNavItems.forEach { (screen, label) ->
-                        NavigationBarItem(
-                            selected = currentScreen == screen,
-                            onClick = { currentScreen = screen },
-                            icon = {
-                                screen.icon?.let { icon ->
-                                    Icon(imageVector = icon, contentDescription = label)
-                                }
-                            },
-                            label = { Text(label) }
-                        )
-                    }
-                }
+            },
+            modifier = Modifier.fillMaxSize()
+        ) { innerPadding ->
+            val modifier = Modifier.padding(innerPadding)
+            when (currentScreen) {
+                Screen.Library -> LibraryScreen(
+                    hasPhotoPermission = hasPhotoPermission,
+                    onRequestPermission = { requestPermissions() },
+                    onPhotoClick = { photoId ->
+                        val scanner = MediaStoreScanner(context)
+                        loadedPhotos = scanner.scanPhotos()
+                        selectedPhotoId = photoId
+                    },
+                    modifier = modifier
+                )
+                Screen.Collections -> CollectionsScreen(
+                    onNavigateToAlbums = { currentScreen = Screen.Albums },
+                    onNavigateToFavorites = { currentScreen = Screen.Favorites },
+                    modifier = modifier
+                )
+                Screen.Search -> SearchScreen(modifier = modifier)
+                Screen.Settings -> SettingsScreen(
+                    onNavigateToServerConnection = { currentScreen = Screen.ServerConnection },
+                    onNavigateToAutoBackup = { currentScreen = Screen.AutoBackup },
+                    modifier = modifier
+                )
+                Screen.ServerConnection -> ServerConnectionScreen(modifier = modifier)
+                Screen.AutoBackup -> AutoBackupScreen(
+                    hasPhotoPermission = hasPhotoPermission,
+                    onRequestPermission = { requestPermissions() },
+                    modifier = modifier
+                )
+                Screen.Albums -> AlbumsScreen(modifier = modifier)
+                Screen.Favorites -> FavoritesScreen(modifier = modifier)
+                else -> LibraryScreen(
+                    hasPhotoPermission = hasPhotoPermission,
+                    onRequestPermission = { requestPermissions() },
+                    onPhotoClick = { photoId ->
+                        val scanner = MediaStoreScanner(context)
+                        loadedPhotos = scanner.scanPhotos()
+                        selectedPhotoId = photoId
+                    },
+                    modifier = modifier
+                )
             }
-        },
-        modifier = Modifier.fillMaxSize()
-    ) { innerPadding ->
-        val modifier = Modifier.padding(innerPadding)
-        when (currentScreen) {
-            Screen.Library -> LibraryScreen(
-                hasPhotoPermission = hasPhotoPermission,
-                onRequestPermission = { requestPermissions() },
-                onPhotoClick = { /* Detail view */ },
-                modifier = modifier
-            )
-            Screen.Collections -> CollectionsScreen(
-                onNavigateToAlbums = { currentScreen = Screen.Albums },
-                onNavigateToFavorites = { currentScreen = Screen.Favorites },
-                modifier = modifier
-            )
-            Screen.Search -> SearchScreen(modifier = modifier)
-            Screen.Settings -> SettingsScreen(
-                onNavigateToServerConnection = { currentScreen = Screen.ServerConnection },
-                onNavigateToAutoBackup = { currentScreen = Screen.AutoBackup },
-                modifier = modifier
-            )
-            Screen.ServerConnection -> ServerConnectionScreen(modifier = modifier)
-            Screen.AutoBackup -> AutoBackupScreen(
-                hasPhotoPermission = hasPhotoPermission,
-                onRequestPermission = { requestPermissions() },
-                modifier = modifier
-            )
-            Screen.Albums -> AlbumsScreen(modifier = modifier)
-            Screen.Favorites -> FavoritesScreen(modifier = modifier)
-            else -> LibraryScreen(
-                hasPhotoPermission = hasPhotoPermission,
-                onRequestPermission = { requestPermissions() },
-                onPhotoClick = { },
-                modifier = modifier
-            )
         }
     }
 }

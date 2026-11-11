@@ -25,4 +25,12 @@ public class UserRepository {
     public void persist(User user) {
         entityManager.persist(user);
     }
+
+    public Optional<User> findByUsername(String username) {
+        return entityManager.createQuery(
+                        "select u from User u where u.username = :username", User.class)
+            .setParameter("username", username)
+            .getResultStream()
+            .findFirst();
+    }
 }

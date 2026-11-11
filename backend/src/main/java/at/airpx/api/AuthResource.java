@@ -1,6 +1,7 @@
 package at.airpx.api;
 
 import at.airpx.model.auth.LoginRequest;
+import at.airpx.model.auth.RegisterRequest;
 import at.airpx.model.error.ErrorResponse;
 import at.airpx.workloads.auth.AuthService;
 import jakarta.ws.rs.Consumes;
@@ -31,5 +32,21 @@ public class AuthResource {
                 .orElseGet(() -> Response.status(Response.Status.UNAUTHORIZED)
                         .entity(new ErrorResponse("invalid email or password"))
                         .build());
+    }
+
+    @POST
+    @Path("/register")
+    public Response register(@Valid @NotNull RegisterRequest request) {
+        return authService.register(
+                request.username(),
+                request.email(),
+                request.password()
+            )
+            .map(response -> Response.status(Response.Status.CREATED)
+                .entity(response)
+                .build())
+            .orElseGet(() -> Response.status(Response.Status.CONFLICT)
+                .entity(new ErrorResponse("username or email already exists"))
+                .build());
     }
 }

@@ -1,6 +1,7 @@
 package at.airpx.workloads.auth;
 
 import at.airpx.model.auth.LoginResponse;
+import at.airpx.model.auth.RegisterResponse;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
@@ -84,5 +85,22 @@ public class AuthService {
 
     private String normalizeEmail(String email) {
         return email.trim().toLowerCase(java.util.Locale.ROOT);
+    }
+
+    @Transactional
+    public Optional<RegisterResponse> register(String username, String email, String password) {
+        String normalizedEmail = normalizeEmail(email);
+        String normalizedUsername = username.trim();
+
+        if (userRepository.findByEmail(normalizedEmail).isPresent() ||
+            userRepository.findByUsername(normalizedUsername).isPresent()) {
+            return Optional.empty();
+        }
+
+        User user = new User(username, email, passwordHasher.hash(password));
+
+        userRepository.persist(user);
+
+        return Optional.of(new RegisterResponse(normalizedUsername, normalizedEmail));
     }
 }

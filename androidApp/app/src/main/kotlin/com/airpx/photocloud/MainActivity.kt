@@ -11,6 +11,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -19,6 +21,7 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,9 +40,9 @@ import com.airpx.photocloud.ui.screens.photos.FavoritesScreen
 import com.airpx.photocloud.ui.screens.photos.LibraryScreen
 import com.airpx.photocloud.ui.screens.photos.PhotoDetailScreen
 import com.airpx.photocloud.ui.screens.photos.SearchScreen
-import com.airpx.photocloud.ui.screens.sync.AutoBackupScreen
 import com.airpx.photocloud.ui.screens.settings.ServerConnectionScreen
 import com.airpx.photocloud.ui.screens.settings.SettingsScreen
+import com.airpx.photocloud.ui.screens.sync.AutoBackupScreen
 import com.airpx.photocloud.ui.theme.AirPxTheme
 
 class MainActivity : ComponentActivity() {
@@ -58,6 +61,7 @@ class MainActivity : ComponentActivity() {
 fun AirPxAppShell() {
     val context = LocalContext.current
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Library) }
+    var previousMainTab by remember { mutableStateOf<Screen>(Screen.Library) }
     var selectedPhotoId by remember { mutableStateOf<String?>(null) }
     var loadedPhotos by remember { mutableStateOf<List<PhotoItem>>(emptyList()) }
 
@@ -136,13 +140,49 @@ fun AirPxAppShell() {
                             }
                         )
                     },
+                    navigationIcon = {
+                        when (currentScreen) {
+                            Screen.ServerConnection, Screen.AutoBackup -> {
+                                IconButton(onClick = { currentScreen = Screen.Settings }) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Zurück"
+                                    )
+                                }
+                            }
+                            Screen.Albums, Screen.Favorites -> {
+                                IconButton(onClick = { currentScreen = Screen.Collections }) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Zurück"
+                                    )
+                                }
+                            }
+                            Screen.Settings -> {
+                                IconButton(onClick = { currentScreen = previousMainTab }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Schließen"
+                                    )
+                                }
+                            }
+                            else -> { }
+                        }
+                    },
                     actions = {
                         if (currentScreen in listOf(Screen.Library, Screen.Collections, Screen.Search)) {
-                            IconButton(onClick = { currentScreen = Screen.Settings }) {
+                            IconButton(onClick = {
+                                previousMainTab = currentScreen
+                                currentScreen = Screen.Settings
+                            }) {
                                 Icon(
                                     imageVector = Icons.Default.Settings,
                                     contentDescription = "Einstellungen"
                                 )
+                            }
+                        } else if (currentScreen == Screen.Settings) {
+                            TextButton(onClick = { currentScreen = previousMainTab }) {
+                                Text("Fertig")
                             }
                         }
                     }

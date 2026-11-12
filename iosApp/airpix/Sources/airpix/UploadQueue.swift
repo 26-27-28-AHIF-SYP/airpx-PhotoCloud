@@ -1,21 +1,12 @@
 import BackgroundTasks
 import Foundation
 import Observation
+import PhotoCloudSync
 
 enum BackendConfig {
-    static let baseURL = "https://airpx.example.invalid"
-    static let uploadPath = "/api/photos/upload" // TODO: Replace when the backend upload contract is defined.
     static let uploadSessionIdentifier = "com.example.airpix.photo-upload"
     static let backgroundTaskIdentifier = "com.example.airpix.photo-sync"
     static let autoBackupDefaultsKey = "airpx.autoBackup.enabled"
-
-    static func photoUploadURL() throws -> URL {
-        guard let baseURL = URL(string: baseURL),
-              let url = URL(string: uploadPath, relativeTo: baseURL)?.absoluteURL else {
-            throw UploadQueueError.invalidEndpoint
-        }
-        return url
-    }
 }
 
 @MainActor
@@ -26,19 +17,17 @@ enum BackgroundSessionEvents {
 struct UploadContext: Codable, Sendable {
     let localIdentifier: String
     let modificationDate: Date?
-    var temporaryFilePath: String?
+    let temporaryFilePath: String?
+    let multipartFilePath: String?
 }
 
 private final class UploadSessionDelegate: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
     private let completion: @Sendable (String?, Int?, Error?) -> Void
 
-    init(completion: @escaping @Sendable (String?, Int?, Error?) -> Void) {
-        self.completion = completion
-    }
+    init(completion: @escaping @Sendable (String?, Int?, Error?) -> Void) { self.completion = completion }
 
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        let responseCode = (task.response as? HTTPURLResponse)?.statusCode
-        completion(task.taskDescription, responseCode, error)
+        completion(task.taskDescription, (task.response as? HTTPURLResponse)?.statusCode, error)
     }
 
     func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
@@ -52,183 +41,156 @@ private final class UploadSessionDelegate: NSObject, URLSessionTaskDelegate, @un
 
 @Observable
 @MainActor
-final class UploadQueue {
+final class UploadQueue: PhotoSyncAPIClient {
     private(set) var lastError: String?
+    private(set) var serverPhotoCount = 0
 
     @ObservationIgnored private let store: SyncStore
     @ObservationIgnored private let photoLibrary: PhotoLibraryService
+    @ObservationIgnored private let serverSession: ServerSession
     @ObservationIgnored private var delegate: UploadSessionDelegate?
     @ObservationIgnored private var session: URLSession?
+    @ObservationIgnored private var uploadContinuations: [String: CheckedContinuation<Void, Error>] = [:]
 
-    init(store: SyncStore, photoLibrary: PhotoLibraryService) {
+    init(store: SyncStore, photoLibrary: PhotoLibraryService, serverSession: ServerSession) {
         self.store = store
         self.photoLibrary = photoLibrary
-
+        self.serverSession = serverSession
         let delegate = UploadSessionDelegate { [weak self] taskDescription, statusCode, error in
             Task { @MainActor [weak self] in
-                await self?.completeUpload(
-                    taskDescription: taskDescription,
-                    statusCode: statusCode,
-                    error: error
-                )
+                await self?.completeUpload(taskDescription: taskDescription, statusCode: statusCode, error: error)
             }
         }
         self.delegate = delegate
-        let configuration = URLSessionConfiguration.background(
-            withIdentifier: BackendConfig.uploadSessionIdentifier
-        )
+        let configuration = URLSessionConfiguration.background(withIdentifier: BackendConfig.uploadSessionIdentifier)
         configuration.sessionSendsLaunchEvents = true
         configuration.isDiscretionary = false
         session = URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
     }
 
     func registerBackgroundProcessingTask() {
-        let registered = BGTaskScheduler.shared.register(
-            forTaskWithIdentifier: BackendConfig.backgroundTaskIdentifier,
-            using: nil
-        ) { [weak self] task in
+        let registered = BGTaskScheduler.shared.register(forTaskWithIdentifier: BackendConfig.backgroundTaskIdentifier, using: nil) { [weak self] task in
             guard let task = task as? BGProcessingTask else {
                 task.setTaskCompleted(success: false)
                 return
             }
-            Task { @MainActor [weak self] in
-                await self?.handleBackgroundTask(task)
-            }
+            Task { @MainActor [weak self] in await self?.handleBackgroundTask(task) }
         }
-        if !registered {
-            lastError = "Could not register the background sync task."
-        }
+        if !registered { lastError = "Der Hintergrund-Sync konnte nicht registriert werden." }
     }
 
     func syncNow(manual: Bool = false) async throws {
-        guard manual || UserDefaults.standard.bool(forKey: BackendConfig.autoBackupDefaultsKey) else {
-            return
-        }
-        guard photoLibrary.authorizationStatus == .authorized
-                || photoLibrary.authorizationStatus == .limited else {
+        guard manual || UserDefaults.standard.bool(forKey: BackendConfig.autoBackupDefaultsKey) else { return }
+        guard photoLibrary.authorizationStatus == .authorized || photoLibrary.authorizationStatus == .limited else {
             throw UploadQueueError.photoAccessRequired
         }
-
+        let credentials = try serverSession.syncCredentials()
         try await store.load()
-        for photo in photoLibrary.fetchVisiblePhotos() {
-            try store.enqueue(photo)
-        }
-        try await startPendingUploads()
+        for photo in photoLibrary.fetchVisiblePhotos() { try store.enqueue(photo) }
+
+        let api: any PhotoSyncAPIClient = serverSession.isUsingMockAPI ? serverSession.serverAPIClient() : self
+        let useCase = PhotoSyncUseCase(client: api, hasher: CryptoKitPhotoHasher(), cache: store)
+        let summary = try await useCase.synchronize(
+            assets: photoLibrary.fetchSyncAssets(),
+            baseURL: credentials.baseURL,
+            token: credentials.token,
+            originalFile: { asset in try await photoLibrary.writeOriginalResource(for: asset.localIdentifier) },
+            onUpdate: { [store] asset, state, _ in
+                await MainActor.run {
+                    let context = UploadContext(localIdentifier: asset.localIdentifier, modificationDate: asset.modificationDate,
+                        temporaryFilePath: nil, multipartFilePath: nil)
+                    do {
+                        switch state {
+                        case .uploading: try store.markUploading(context)
+                        case .alreadyOnServer, .uploaded: try store.markDone(context, serverPhotoId: nil)
+                        case .failed(let message): try store.markFailed(context, error: PhotoSyncFailure(message: message))
+                        }
+                    } catch { }
+                }
+            }
+        )
+        serverPhotoCount = summary.serverPhotoCount
+        lastError = summary.failed == 0 ? nil : "\(summary.failed) Fotos konnten nicht synchronisiert werden."
         try scheduleBackgroundProcessing()
     }
 
     func enqueueChangedPhotos(_ photos: [LocalPhoto]) async {
-        do {
-            try await store.load()
-            for photo in photos {
-                try store.enqueue(photo)
-            }
-            try await startPendingUploads()
-            try scheduleBackgroundProcessing()
-        } catch {
-            lastError = error.localizedDescription
-        }
+        guard !photos.isEmpty else { return }
+        do { try await syncNow() }
+        catch { lastError = error.localizedDescription }
     }
 
     func pauseAutoBackup() {
         BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackendConfig.backgroundTaskIdentifier)
-        session?.getAllTasks { tasks in
-            tasks.forEach { $0.cancel() }
-        }
+        session?.getAllTasks { $0.forEach { $0.cancel() } }
     }
 
-    private func startPendingUploads() async throws {
+    func missingHashes(baseURL: URL, token: String, hashes: [String]) async throws -> Set<String> {
+        try await serverSession.serverAPIClient().missingHashes(baseURL: baseURL, token: token, hashes: hashes)
+    }
+
+    func listPhotos(baseURL: URL, token: String) async throws -> [PhotoServerRecord] {
+        try await serverSession.serverAPIClient().listPhotos(baseURL: baseURL, token: token)
+    }
+
+    func uploadPhoto(baseURL: URL, token: String, asset: PhotoSyncAsset, fileURL: URL, metadata: PhotoUploadMetadata) async throws {
         guard let session else { throw UploadQueueError.sessionUnavailable }
-
-        for record in store.dueRecords() {
-            let context = UploadContext(
-                localIdentifier: record.localIdentifier,
-                modificationDate: record.modificationDate,
-                temporaryFilePath: nil
-            )
-            try store.markUploading(context)
-
-            var temporaryFileURL: URL?
-            do {
-                let fileURL = try await photoLibrary.writeOriginalResource(
-                    for: record.localIdentifier
-                )
-                temporaryFileURL = fileURL
-                var request = URLRequest(url: try BackendConfig.photoUploadURL())
-                request.httpMethod = "POST"
-                request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
-                let task = session.uploadTask(with: request, fromFile: fileURL)
-                let uploadContext = UploadContext(
-                    localIdentifier: context.localIdentifier,
-                    modificationDate: context.modificationDate,
-                    temporaryFilePath: fileURL.path
-                )
-                task.taskDescription = try JSONEncoder().encode(uploadContext).base64EncodedString()
-                task.resume()
-            } catch let uploadError {
-                var cleanupError: Error?
-                if let temporaryFileURL, FileManager.default.fileExists(atPath: temporaryFileURL.path) {
-                    do {
-                        try FileManager.default.removeItem(at: temporaryFileURL)
-                    } catch {
-                        cleanupError = error
-                    }
-                }
-                do {
-                    try store.markFailed(context, error: uploadError)
-                } catch {
-                    lastError = error.localizedDescription
-                    continue
-                }
-                lastError = (cleanupError ?? uploadError).localizedDescription
-            }
+        let boundary = "AirPx-\(UUID().uuidString)"
+        let bodyURL = try MultipartPhotoUpload.makeBody(fileURL: fileURL, metadata: metadata, boundary: boundary)
+        guard let url = URL(string: "/api/photos", relativeTo: baseURL)?.absoluteURL else {
+            try? FileManager.default.removeItem(at: bodyURL)
+            throw UploadQueueError.invalidEndpoint
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        let requestID = UUID().uuidString
+        let context = UploadContext(localIdentifier: asset.localIdentifier, modificationDate: asset.modificationDate,
+            temporaryFilePath: fileURL.path, multipartFilePath: bodyURL.path)
+        let encodedContext = try JSONEncoder().encode(context).base64EncodedString()
+        let task = session.uploadTask(with: request, fromFile: bodyURL)
+        task.taskDescription = "\(requestID)|\(encodedContext)"
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            uploadContinuations[requestID] = continuation
+            task.resume()
         }
     }
 
-    private func completeUpload(
-        taskDescription: String?,
-        statusCode: Int?,
-        error: Error?
-    ) async {
-        guard let taskDescription,
-              let contextData = Data(base64Encoded: taskDescription) else {
-            lastError = "An upload completed without valid photo metadata."
+    private func completeUpload(taskDescription: String?, statusCode: Int?, error: Error?) async {
+        guard let taskDescription, let separator = taskDescription.firstIndex(of: "|") else {
+            lastError = "Ein Upload wurde ohne gültigen Kontext abgeschlossen."
+            return
+        }
+        let requestID = String(taskDescription[..<separator])
+        let encodedContext = String(taskDescription[taskDescription.index(after: separator)...])
+        guard let data = Data(base64Encoded: encodedContext), let context = try? JSONDecoder().decode(UploadContext.self, from: data) else {
+            uploadContinuations.removeValue(forKey: requestID)?.resume(throwing: UploadQueueError.invalidContext)
+            lastError = "Upload-Metadaten konnten nicht gelesen werden."
             return
         }
 
-        let context: UploadContext
+        let hasWaiter = uploadContinuations[requestID] != nil
+        let failure: Error?
+        if let error { failure = error }
+        else if let statusCode, (200..<300).contains(statusCode) { failure = nil }
+        else { failure = UploadQueueError.httpFailure(statusCode) }
         do {
-            context = try JSONDecoder().decode(UploadContext.self, from: contextData)
-        } catch {
-            lastError = error.localizedDescription
-            return
-        }
-
-        do {
-            if let error {
-                try store.markFailed(context, error: error)
-                lastError = error.localizedDescription
-            } else if let statusCode, (200..<300).contains(statusCode) {
-                // The server response schema is intentionally not assumed; wire serverPhotoId once defined.
-                try store.markDone(context, serverPhotoId: nil)
-                lastError = nil
-            } else {
-                let failure = UploadQueueError.httpFailure(statusCode)
-                try store.markFailed(context, error: failure)
+            if let failure {
+                if !hasWaiter { try store.markFailed(context, error: failure) }
                 lastError = failure.localizedDescription
+            } else {
+                if !hasWaiter { try store.markDone(context, serverPhotoId: nil) }
+                lastError = nil
             }
-            try scheduleBackgroundProcessing()
-        } catch {
-            lastError = error.localizedDescription
+        } catch { lastError = error.localizedDescription }
+        if let path = context.multipartFilePath { try? FileManager.default.removeItem(atPath: path) }
+        if let path = context.temporaryFilePath { try? FileManager.default.removeItem(atPath: path) }
+        if let continuation = uploadContinuations.removeValue(forKey: requestID) {
+            if let failure { continuation.resume(throwing: failure) }
+            else { continuation.resume() }
         }
-
-        if let path = context.temporaryFilePath, FileManager.default.fileExists(atPath: path) {
-            do {
-                try FileManager.default.removeItem(atPath: path)
-            } catch {
-                lastError = error.localizedDescription
-            }
-        }
+        try? scheduleBackgroundProcessing()
     }
 
     private func scheduleBackgroundProcessing() throws {
@@ -236,13 +198,9 @@ final class UploadQueue {
             BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackendConfig.backgroundTaskIdentifier)
             return
         }
-
         let request = BGProcessingTaskRequest(identifier: BackendConfig.backgroundTaskIdentifier)
         request.requiresNetworkConnectivity = true
-        request.earliestBeginDate = max(
-            Date.now.addingTimeInterval(15 * 60),
-            store.nextRetryDate ?? .distantPast
-        )
+        request.earliestBeginDate = max(Date.now.addingTimeInterval(15 * 60), store.nextRetryDate ?? .distantPast)
         try BGTaskScheduler.shared.submit(request)
     }
 
@@ -251,7 +209,6 @@ final class UploadQueue {
             task.setTaskCompleted(success: true)
             return
         }
-
         let operation = Task { try await syncNow() }
         task.expirationHandler = { operation.cancel() }
         do {
@@ -264,26 +221,26 @@ final class UploadQueue {
     }
 }
 
+private struct PhotoSyncFailure: Error, LocalizedError {
+    let message: String
+    init(message: String) { self.message = message }
+    var errorDescription: String? { message }
+}
+
 private enum UploadQueueError: LocalizedError {
     case photoAccessRequired
     case sessionUnavailable
     case invalidEndpoint
+    case invalidContext
     case httpFailure(Int?)
 
     var errorDescription: String? {
         switch self {
-        case .photoAccessRequired:
-            "Photo library access is required before syncing."
-        case .sessionUnavailable:
-            "The background upload session is unavailable."
-        case .invalidEndpoint:
-            "The configured photo upload URL is invalid."
-        case .httpFailure(let statusCode):
-            if let statusCode {
-                "The photo upload failed with HTTP status \(statusCode)."
-            } else {
-                "The photo upload returned no HTTP response."
-            }
+        case .photoAccessRequired: AppStrings.photoAccessRequiredForBackup
+        case .sessionUnavailable: "Der Hintergrund-Upload ist nicht verfügbar."
+        case .invalidEndpoint: AppStrings.invalidServerURL
+        case .invalidContext: "Upload-Metadaten konnten nicht gelesen werden."
+        case .httpFailure(let status): "Upload fehlgeschlagen (HTTP \(status.map { String($0) } ?? "keine Antwort"))."
         }
     }
 }

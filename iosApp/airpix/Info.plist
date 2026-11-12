@@ -3,7 +3,43 @@
 <plist version="1.0">
 <dict>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>AirPx uses photo access to display your on-device library. Auto-Backup is optional and stays off until you enable it.</string>
+	<string>AirPx greift auf deine Fotos zu, damit du sie ansehen und auf Wunsch mit deinem Server synchronisieren kannst.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>AirPx verbindet sich mit deinem selbst gehosteten PhotoCloud-Server im lokalen Netzwerk.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>10.0.2.2</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
+				<false/>
+			</dict>
+			<key>localhost</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
+				<false/>
+			</dict>
+			<key>127.0.0.1</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
+				<false/>
+			</dict>
+			<key>photocloud.local</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
+				<false/>
+			</dict>
+		</dict>
+	</dict>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>com.example.airpix.photo-sync</string>

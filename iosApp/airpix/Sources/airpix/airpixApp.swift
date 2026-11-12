@@ -12,8 +12,8 @@ struct airpixApp: App {
     init() {
         let store = SyncStore()
         let photoLibrary = PhotoLibraryService()
-        let uploadQueue = UploadQueue(store: store, photoLibrary: photoLibrary)
         let serverSession = ServerSession()
+        let uploadQueue = UploadQueue(store: store, photoLibrary: photoLibrary, serverSession: serverSession)
         self.store = store
         self.photoLibrary = photoLibrary
         self.uploadQueue = uploadQueue

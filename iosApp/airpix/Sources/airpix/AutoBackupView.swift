@@ -26,26 +26,26 @@ struct AutoBackupView: View {
                         Task { await setAutoBackupEnabled(newValue) }
                     }
                 ))
-                .accessibilityHint("Photo backup is off until you turn it on.")
+                .accessibilityHint("Deine Fotos werden erst gesichert, wenn du Auto-Backup aktivierst.")
             } footer: {
-                Text("Your camera roll is not uploaded unless you enable Auto-Backup.")
+                Text("Deine Fotos werden nur hochgeladen, wenn Auto-Backup aktiviert ist.")
             }
 
-            Section("Photo Library Access") {
+            Section("Fotozugriff") {
                 Text(permissionDescription)
                 if photoLibrary.authorizationStatus == .notDetermined {
                     Text(AppStrings.photoAccessRequiredForBackup)
                         .foregroundStyle(.secondary)
                 }
                 if photoLibrary.authorizationStatus == .limited {
-                    Button("Choose More Photos…") {
+                    Button("Weitere Fotos auswählen …") {
                         isLimitedPickerPresented = true
                     }
                 } else if photoLibrary.authorizationStatus == .denied
                             || photoLibrary.authorizationStatus == .restricted {
-                    Text("Allow AirPx to access photos in Settings to use Auto-Backup.")
+                    Text("Erlaube AirPx in den Einstellungen den Zugriff auf Fotos.")
                         .foregroundStyle(.secondary)
-                    Button("Open Settings") {
+                    Button("Einstellungen öffnen") {
                         if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
                             openURL(settingsURL)
                         }
@@ -53,28 +53,30 @@ struct AutoBackupView: View {
                 }
             }
 
-            Section("Sync Status") {
-                LabeledContent("Pending", value: "\(store.pendingCount)")
-                LabeledContent("Uploaded", value: "\(store.uploadedCount)")
+            Section("Synchronisierungsstatus") {
+                LabeledContent("Ausstehend", value: "\(store.pendingCount)")
+                LabeledContent("Hochgeladen", value: "\(store.uploadedCount)")
+                LabeledContent("Fehlgeschlagen", value: "\(store.failedCount)")
+                LabeledContent("Fotos auf dem Server", value: "\(uploadQueue.serverPhotoCount)")
                 Button {
                     Task { await syncNow() }
                 } label: {
                     if isSyncing {
-                        ProgressView("Syncing…")
+                        ProgressView("Synchronisierung läuft …")
                     } else {
-                        Text("Sync now")
+                        Text("Jetzt synchronisieren")
                     }
                 }
                 .disabled(isSyncing)
             }
 
             if let errorMessage {
-                Section("Issue") {
+                Section(AppStrings.error) {
                     Text(errorMessage)
                         .foregroundStyle(.red)
                 }
             } else if let queueError = uploadQueue.lastError {
-                Section("Issue") {
+                Section(AppStrings.error) {
                     Text(queueError)
                         .foregroundStyle(.red)
                 }
@@ -139,17 +141,17 @@ struct AutoBackupView: View {
     private var permissionDescription: String {
         switch photoLibrary.authorizationStatus {
         case .authorized:
-            "Full photo library access"
+            "Voller Zugriff auf die Fotomediathek"
         case .limited:
-            "Limited access — only selected photos are included"
+            "Eingeschränkter Zugriff – nur ausgewählte Fotos werden gesichert"
         case .denied:
-            "Access denied"
+            "Zugriff verweigert"
         case .restricted:
-            "Access restricted"
+            "Zugriff eingeschränkt"
         case .notDetermined:
-            "Permission has not been requested"
+            "Zugriff wurde noch nicht angefragt"
         @unknown default:
-            "Unknown permission status"
+            "Unbekannter Berechtigungsstatus"
         }
     }
 

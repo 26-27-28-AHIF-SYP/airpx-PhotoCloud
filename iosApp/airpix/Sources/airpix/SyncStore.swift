@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import PhotoCloudSync
 
 enum UploadStatus: String, Codable, Sendable {
     case pending
@@ -15,6 +16,7 @@ struct SyncRecord: Codable, Identifiable, Sendable {
     var modificationDate: Date?
     var uploadedAt: Date?
     var serverPhotoId: String?
+    var sha256: String?
     var status: UploadStatus
     var retryCount: Int
     var retryAfter: Date?
@@ -23,15 +25,17 @@ struct SyncRecord: Codable, Identifiable, Sendable {
 
 @Observable
 @MainActor
-final class SyncStore {
+final class SyncStore: PhotoHashCache {
     private(set) var records: [String: SyncRecord] = [:]
     @ObservationIgnored private let fileURL: URL
     @ObservationIgnored private var isLoaded = false
     @ObservationIgnored private var loadingTask: Task<[String: SyncRecord], Error>?
 
     var pendingCount: Int {
-        records.values.filter { $0.status != .done }.count
+        records.values.filter { $0.status == .pending || $0.status == .uploading }.count
     }
+
+    var failedCount: Int { records.values.filter { $0.status == .failed }.count }
 
     var uploadedCount: Int {
         records.values.filter { $0.status == .done }.count
@@ -83,6 +87,7 @@ final class SyncStore {
             modificationDate: photo.modificationDate,
             uploadedAt: nil,
             serverPhotoId: existing?.serverPhotoId,
+            sha256: existing?.modificationDate == photo.modificationDate ? existing?.sha256 : nil,
             status: .pending,
             retryCount: 0,
             retryAfter: nil,
@@ -90,6 +95,18 @@ final class SyncStore {
         )
         try persist()
         return true
+    }
+
+    func cachedHash(localIdentifier: String, modificationDate: Date?) async -> String? {
+        guard let record = records[localIdentifier], record.modificationDate == modificationDate else { return nil }
+        return record.sha256
+    }
+
+    func saveHash(_ hash: String, localIdentifier: String, modificationDate: Date?) async throws {
+        guard var record = records[localIdentifier], record.modificationDate == modificationDate else { return }
+        record.sha256 = hash
+        records[localIdentifier] = record
+        try persist()
     }
 
     func dueRecords(at date: Date = .now) -> [SyncRecord] {

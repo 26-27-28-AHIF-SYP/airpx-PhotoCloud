@@ -16,9 +16,13 @@ let package = Package(
             targets: ["airpix"]
         ),
     ],
+    dependencies: [
+        .package(path: "../PhotoCloudSync"),
+    ],
     targets: [
         .target(
             name: "airpix",
+            dependencies: [.product(name: "PhotoCloudSync", package: "PhotoCloudSync")],
             resources: [
                 .process("Resources"),
             ]

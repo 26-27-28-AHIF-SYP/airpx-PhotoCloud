@@ -1,5 +1,6 @@
 #if DEBUG
 import Foundation
+import PhotoCloudSync
 
 enum MockFailureMode: String, CaseIterable, Identifiable, Sendable {
     case none
@@ -23,7 +24,7 @@ struct MockServerAPI: ServerAPI {
 
     func serverInfo(baseURL: URL) async throws -> ServerInfo {
         if failureMode == .unreachable { throw ServerAPIError.unreachable }
-        return ServerInfo(name: AppStrings.mockServerName, apiVersion: "1", status: "ok")
+        return ServerInfo(status: "up", name: AppStrings.mockServerName, apiVersion: "1")
     }
 
     func login(baseURL: URL, request: LoginRequest) async throws -> LoginResponse {
@@ -36,11 +37,13 @@ struct MockServerAPI: ServerAPI {
         return LoginResponse(accessToken: "mock-access-token", tokenType: "Bearer", expiresAt: .now.addingTimeInterval(lifetime))
     }
 
-    func findMissingPhotos(baseURL: URL, token: String, request: MissingPhotosRequest) async throws -> MissingPhotosResponse { throw ServerAPIError.unauthorized }
-    func uploadPhoto(baseURL: URL, token: String, fileURL: URL, metadata: UploadMetadata) async throws -> ServerPhoto { throw ServerAPIError.notImplemented }
-    func listPhotos(baseURL: URL, token: String, cursor: String?, limit: Int?) async throws -> PhotoPage { throw ServerAPIError.notImplemented }
-    func downloadThumbnail(baseURL: URL, token: String, photoID: String) async throws -> Data { throw ServerAPIError.notImplemented }
-    func downloadOriginal(baseURL: URL, token: String, photoID: String) async throws -> Data { throw ServerAPIError.notImplemented }
-    func deletePhoto(baseURL: URL, token: String, photoID: String) async throws { throw ServerAPIError.notImplemented }
+    func missingHashes(baseURL: URL, token: String, hashes: [String]) async throws -> Set<String> {
+        if failureMode == .expiredToken { throw ServerAPIError.unauthorized }
+        return Set(hashes)
+    }
+
+    func uploadPhoto(baseURL: URL, token: String, asset: PhotoSyncAsset, fileURL: URL, metadata: PhotoUploadMetadata) async throws {}
+
+    func listPhotos(baseURL: URL, token: String) async throws -> [PhotoServerRecord] { [] }
 }
 #endif

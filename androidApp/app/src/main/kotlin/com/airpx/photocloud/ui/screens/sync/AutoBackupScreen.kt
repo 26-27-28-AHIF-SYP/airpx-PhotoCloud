@@ -59,6 +59,12 @@ fun AutoBackupScreen(
     val failed = progress?.getInt("failed", work.outputData.getInt("failed", 0)) ?: 0
 
     val hasAnyPermission = permissionStatus != PhotoPermissionStatus.DENIED
+    val syncDisabledReason = when {
+        !signedIn -> "Bitte zuerst anmelden und den Server verbinden."
+        !hasAnyPermission -> "Bitte zuerst Medienzugriff erlauben."
+        work?.state?.isFinished == false -> "Synchronisierung läuft oder wartet auf die Netzwerkverbindung."
+        else -> null
+    }
 
     Column(
         modifier = modifier
@@ -85,7 +91,7 @@ fun AutoBackupScreen(
             )
         }
         Text(
-            text = "Deine Medien werden nicht hochgeladen, solange Auto-Backup deaktiviert ist.",
+            text = "Automatische Hintergrund-Synchronisierung ein- oder ausschalten.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -145,26 +151,33 @@ fun AutoBackupScreen(
             color = MaterialTheme.colorScheme.primary
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Text("Ausstehend:", modifier = Modifier.weight(1f))
-            Text(pending.toString())
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Text("Hochgeladen:", modifier = Modifier.weight(1f))
-            Text(uploaded.toString())
+        if (work == null) {
+            Text("Noch keine Synchronisierung gestartet.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        } else {
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Text("Ausstehend:", modifier = Modifier.weight(1f))
+                Text(pending.toString())
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Text("Hochgeladen:", modifier = Modifier.weight(1f))
+                Text(uploaded.toString())
+            }
         }
         if (failed > 0) Text("Fehlgeschlagen: $failed", color = MaterialTheme.colorScheme.error)
-        if (work?.state?.isFinished == true && work.outputData.getString("message") != null) {
-            Text(work.outputData.getString("message")!!, color = MaterialTheme.colorScheme.error)
-        }
+        val errorMessage = progress?.getString("message") ?: work?.outputData?.getString("message")
+        if (errorMessage != null) Text(errorMessage, color = MaterialTheme.colorScheme.error)
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = { PhotoSyncScheduler.syncNow(context, wifiOnly) },
-            enabled = signedIn && hasAnyPermission && work?.state?.isFinished != false,
+            enabled = syncDisabledReason == null,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Jetzt synchronisieren")
+        }
+        if (syncDisabledReason != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(syncDisabledReason, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

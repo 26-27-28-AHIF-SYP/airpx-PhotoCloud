@@ -25,5 +25,19 @@ class SynchronizePhotosUseCaseTest {
         assertEquals(listOf(0, 1, 2), progress)
     }
 
+    @Test fun reportsFailedUploadsSeparatelyFromPendingCount() = runTest {
+        val repository = object : SyncRepository {
+            override suspend fun scanPhotos() = listOf(photo("a"))
+            override suspend fun missingHashes(hashes: List<String>) = setOf("a")
+            override suspend fun upload(photo: SyncPhoto) { error("network unavailable") }
+        }
+
+        val summary = SynchronizePhotosUseCase(repository)()
+
+        assertEquals(0, summary.uploaded)
+        assertEquals(0, summary.pending)
+        assertEquals(1, summary.failed)
+    }
+
     private fun photo(hash: String) = SyncPhoto("content://$hash", "$hash.jpg", null, "image/jpeg", 1, hash)
 }

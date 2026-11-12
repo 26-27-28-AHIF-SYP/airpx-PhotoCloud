@@ -11,11 +11,19 @@ services:
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
+      AUTH_BOOTSTRAP_USERNAME: ${AUTH_BOOTSTRAP_USERNAME:-}
+      AUTH_BOOTSTRAP_EMAIL: ${AUTH_BOOTSTRAP_EMAIL:-}
+      AUTH_BOOTSTRAP_PASSWORD: ${AUTH_BOOTSTRAP_PASSWORD:-}
+      AUTH_TOKEN_LIFETIME: ${AUTH_TOKEN_LIFETIME:-PT8H}
       QUARKUS_HIBERNATE_ORM_SCHEMA_MANAGEMENT_STRATEGY: update
+      PHOTO_STORAGE_DIRECTORY: ${PHOTO_STORAGE_DIRECTORY:-/var/lib/photocloud/photos}
+      PHOTO_MAX_BODY_SIZE: ${PHOTO_MAX_BODY_SIZE:-100M}
 
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - photo_data:/var/lib/photocloud/photos
 
   db:
     image: postgres:18
@@ -40,3 +48,4 @@ services:
 
 volumes:
   postgres_data:
+  photo_data:

@@ -2,7 +2,7 @@
 
 This file applies only to work inside `backend/`. It describes the current
 backend implementation and the rules for extending it. Repository-level
-guidance in `../agents.md` still applies where it does not conflict with this
+guidance in `../AGENTS.md` still applies where it does not conflict with this
 file.
 
 ## Scope
@@ -144,6 +144,18 @@ AUTH_BOOTSTRAP_PASSWORD
 AUTH_TOKEN_LIFETIME
 ```
 
+Photo storage variables are:
+
+```text
+PHOTO_STORAGE_DIRECTORY
+PHOTO_MAX_BODY_SIZE
+```
+
+`PHOTO_STORAGE_DIRECTORY` defaults to `./data/photos` in the application and
+is set to `/var/lib/photocloud/photos` by the Compose example. Compose mounts
+that container directory on the `photo-data` Docker volume. `PHOTO_MAX_BODY_SIZE`
+sets `quarkus.http.limits.max-body-size` and defaults to `100M`.
+
 The bootstrap values are optional. If all required bootstrap values are
 present, the application creates the user only when that normalized email does
 not already exist. It does not update an existing user's password.
@@ -171,7 +183,18 @@ GET  /api
 GET  /api/albums
 POST /api/auth/login
 POST /api/auth/register
+POST /api/photos/missing
+POST /api/photos              (multipart upload)
+GET  /api/photos
 ```
+
+All `/api/photos` routes require `Authorization: Bearer <token>`. The missing
+hash request is JSON `{ "hashes": ["<sha256>"] }` and returns
+`{ "missingHashes": [...] }`. Upload multipart fields are `file`, `filename`,
+`capturedAt`, `sha256`, `size`, and `mimeType`; `albumId` is optional and must
+identify an album owned by the authenticated user. Uploads accept `image/*`,
+are SHA-256 checked on the server, and are stored under generated filenames.
+The photo list returns only the authenticated user's metadata.
 
 The login request is validated with Bean Validation and uses:
 
@@ -334,16 +357,13 @@ git diff --check
 
 ## API documentation
 
-The broader OpenAPI contract is stored outside this directory at
+The OpenAPI contract is stored outside this directory at
 `../docs/api/openapi.yaml`. When changing a backend route, request, response,
 status code, or authentication behavior, update the corresponding OpenAPI
 entry if the documentation is in scope.
 
-Keep the documented contract honest. Do not document photo upload, photo
-listing, health, or other planned endpoints as implemented unless matching
-backend resources exist. At the time of writing, several photo-related
-entries in the broader contract describe planned functionality rather than
-implemented backend code.
+Keep the documented contract honest. The photo endpoints above are implemented
+in `api/PhotoResource.java`; check its paths and tests when changing them.
 
 ## Security rules
 

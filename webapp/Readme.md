@@ -38,6 +38,3 @@ Profileinstellungen und weitere Aktionen benötigen noch eine Backend-Anbindung.
   Mobile-App sollen dieselbe REST-API über HTTPS verwenden (JSON für Metadaten,
   Datei-Uploads für Fotos). Das Backend wird aktuell folgende Technologien verwenden; Quarkus, Java
   und PostgreSQL.
-- **Automatische Synchronisierung:** Sie gehört in die mobile App. Diese kann
-  neue Fotos im Hintergrund erkennen, Uploads lokal vormerken und bei fehlender
-  Verbindung erneut versuchen.

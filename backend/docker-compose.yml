@@ -1,0 +1,42 @@
+services:
+  app:
+    build: .
+    container_name: quarkus-app
+    ports:
+      - "${APP_PORT}:8080"
+
+    environment:
+      DB_HOST: ${DB_HOST:-db}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      QUARKUS_HIBERNATE_ORM_SCHEMA_MANAGEMENT_STRATEGY: update
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:18
+    container_name: postgres-db
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_PORT: ${DB_PORT:-5432}
+
+    ports:
+      - "${POSTGRES_PORT:-5433}:${DB_PORT:-5432}"
+    command: ["postgres", "-p", "${DB_PORT:-5432}"]
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} -p $${DB_PORT}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:

@@ -21,6 +21,7 @@ cd iosApp/airpix && xtool dev run
 ```
 
 The run command syntax was verified with `xtool help dev run`. `infoPath` and `iconPath` are the xtool manifest keys currently used in `xtool.yml`.
+The platform-independent sync domain is the sibling SwiftPM package `iosApp/PhotoCloudSync`; run its tests with `cd iosApp/PhotoCloudSync && swift test`.
 
 To verify the SDK and minimum OS recorded in the built binary:
 
@@ -34,6 +35,7 @@ Check the binary's `sdk` and `minos` values; do not infer the SDK stamp from the
 ```text
 iosApp/
 ├── Readme.md
+├── PhotoCloudSync/  # platform-independent sync domain and tests
 └── airpix/
     ├── Package.swift
     ├── xtool.yml
@@ -69,6 +71,7 @@ iosApp/
 ## Technical constraints and project rules
 - Use Swift and SwiftUI, Apple frameworks, and SwiftPM. The package currently declares no third-party dependencies; get approval before adding any.
 - The minimum supported iOS version is 26.0, as declared in `Package.swift`.
+- Keep the app as a SwiftPM/xtool library product; do not add an Xcode project. `airpix/Package.swift` depends on the local `PhotoCloudSync` package.
 - Photo library browsing may request access only after the user taps the explicit allow-access button, currently “Zugriff erlauben”; never request it at launch or when opening Settings. Browsing access is separate from Auto-Backup, which remains opt-in and off by default. With limited PhotoKit access, show and sync only assets visible to the app; preserve the `presentLimitedLibraryPicker` flow so users can choose more photos. Mount UIKit picker bridges only while the picker is actively needed.
 - `airpixApp` creates the shared `SyncStore`, `PhotoLibraryService`, and `UploadQueue`, and passes them through `RootView`. Use the same `PhotoLibraryService` across tabs so photo authorization status is shared. `PhotoAccessPromptView` is the UI entry point for requesting authorization; other screens may refresh status but must not request it.
 - Settings is presented as a single sheet from `RootView` with one `NavigationStack` and a “Fertig” close button. Do not add a second Settings presentation or a second `NavigationStack` inside that sheet.
@@ -79,6 +82,7 @@ iosApp/
 - Search uses SwiftUI's `.searchable` UI and filters on-device by capture-date text and an optional date range. Do not use `CLGeocoder`, network lookups, place names, or external search services. Do not add location filtering without first confirming a specific on-device method. AI search remains a placeholder.
 - Server routes exist only if they are in the API contract at `../docs/api/openapi.yaml`; read the contract, but do not edit it from iOS tasks. Change the contract only when the user asks.
 - Keep server calls behind the `ServerAPI` protocol with live and debug-only mock implementations; store tokens and secrets in the Keychain, and never store or log passwords.
+- The live contract is `GET /api`, `POST /api/auth/login`, `POST /api/photos/missing`, multipart `POST /api/photos`, and `GET /api/photos`. Keep development HTTP limited to `10.0.2.2`, `localhost`, `127.0.0.1`, and `photocloud.local`; both `ServerSession` and the exact `NSAppTransportSecurity.NSExceptionDomains` entries enforce this allowlist. `NSLocalNetworkUsageDescription` and `NSPhotoLibraryUsageDescription` belong in the xtool-supplied `Info.plist`.
 
 ## Working agreement
 - Before large changes, list the files you plan to create or modify and wait for confirmation.

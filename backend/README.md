@@ -9,8 +9,13 @@ Copy `.env.example` to `.env`, set local database and bootstrap credentials,
 then run from `backend/`:
 
 ```sh
+./mvnw package -DskipTests
 docker compose --env-file .env up --build
 ```
+
+Re-run the Maven package command after backend source changes before rebuilding
+the image. The Dockerfile copies the already packaged `target/quarkus-app/`;
+`./mvnw test` alone does not refresh that runnable image input.
 
 Do not commit `.env`. The default development API base URL is
 `http://localhost:8080/api`. Photo files are stored under

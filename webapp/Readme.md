@@ -2,7 +2,9 @@
 
 Die Web-App ist aktuell bewusst auf eine einzelne, responsive Dashboard-Seite
 beschränkt. Sie verwendet React mit Vite; es gibt keine zusätzlichen
-Frontend-Routen.
+Frontend-Routen. Der Schalter „Nutzer / Admin“ wechselt für die Mockup-
+Vorschau zwischen dem normalen Dashboard und einer Admin-Übersicht. Er
+simuliert keine Anmeldung oder echte Rollen-/Zugriffsprüfung.
 
 ## Lokal starten
 
@@ -17,7 +19,10 @@ Benachrichtigungen erscheinen beim Profil. „Teilen“ zeigt alle geteilten Alb
 unter „Fotos“ ist die vollständige Galerie verfügbar. Verschachtelte Alben
 filtern die Galerie auf das ausgewählte Album.
 
-Die Beispielbilder, Albumdaten und Benachrichtigung sind lokal im Frontend
-hinterlegt. Uploads erscheinen nur in der aktuellen Browser-Sitzung und werden
-nicht in eine Cloud übertragen. Automatische Handy-Synchronisierung,
+Das Admin-Dashboard ist auf einen kleinen privaten Host ausgerichtet: Es zeigt
+laufende Uploads und Synchronisierungen, aktive Share-Links, Nutzerstatus sowie
+CPU-, RAM-, Speicher- und Netzwerkauslastung. Alle Kennzahlen, Jobs, Nutzer,
+Share-Links und Statusanzeigen sind Mockup-Daten im Frontend. Uploads erscheinen
+nur in der aktuellen Browser-Sitzung und werden nicht in eine Cloud übertragen.
+Automatische Handy-Synchronisierung, echte Admin-Funktionen,
 Profileinstellungen und weitere Aktionen benötigen noch eine Backend-Anbindung.

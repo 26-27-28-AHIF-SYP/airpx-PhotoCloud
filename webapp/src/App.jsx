@@ -231,6 +231,38 @@ const latestNotification = {
   detail: "Familienzeit · vor 2 Std.",
 };
 
+const adminMetrics = [
+  { label: "Aktive Jobs", value: "2", change: "1 Upload · 1 Sync", icon: "upload" },
+  { label: "Nutzer", value: "8", change: "6 aktiv · 2 offline", icon: "shared" },
+  { label: "Aktive Share-Links", value: "3", change: "Alle erreichbar", icon: "albums" },
+  { label: "Systemstatus", value: "Online", change: "Seit 14 Tagen aktiv", icon: "devices" },
+];
+
+const adminUsers = [
+  { initials: "AK", name: "Anna Keller", email: "anna.keller@example.at", lastSeen: "Jetzt", status: "Online", color: "coral" },
+  { initials: "LM", name: "Lukas Mayer", email: "lukas.mayer@example.at", lastSeen: "vor 4 Min.", status: "Synchronisiert", color: "amber" },
+  { initials: "MS", name: "Mia Schneider", email: "mia.schneider@example.at", lastSeen: "vor 26 Min.", status: "Online", color: "sage" },
+  { initials: "TB", name: "Tom Berger", email: "tom.berger@example.at", lastSeen: "gestern", status: "Offline", color: "plum" },
+];
+
+const adminJobs = [
+  { id: "upload-anna", user: "Anna Keller", detail: "Lädt 186 Bilder hoch · Familienurlaub", amount: "1,2 GB", progress: 68, icon: "upload", color: "coral" },
+  { id: "sync-lukas", user: "Lukas Mayer", detail: "Synchronisiert 248 Fotos", amount: "324 MB", progress: 42, icon: "devices", color: "amber" },
+];
+
+const adminShareLinks = [
+  { album: "Familienurlaub", owner: "Anna Keller", access: "Link · Passwort", views: "12 Aufrufe", status: "Aktiv" },
+  { album: "Sommer in Tirol", owner: "Mia Schneider", access: "Freunde", views: "8 Aufrufe", status: "Aktiv" },
+  { album: "Wochenendtrip", owner: "Lukas Mayer", access: "Link", views: "3 Aufrufe", status: "Aktiv" },
+];
+
+const adminResources = [
+  { label: "Prozessor", detail: "4 Kerne", value: "34 %", percent: 34, color: "cpu" },
+  { label: "Arbeitsspeicher", detail: "10,9 von 16 GB", value: "68 %", percent: 68, color: "memory" },
+  { label: "Speicherplatz", detail: "2,4 von 4 TB", value: "60 %", percent: 60, color: "disk" },
+  { label: "Netzwerk", detail: "Upload / Download", value: "42 / 128 Mb/s", percent: 47, color: "network" },
+];
+
 function collectAlbumIds(album) {
   return [
     album.id,
@@ -351,6 +383,7 @@ function SharedAlbumCard({ album, onOpen }) {
 
 function App() {
   const [photos, setPhotos] = useState(initialPhotos);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [search, setSearch] = useState("");
   const [activeView, setActiveView] = useState("overview");
   const [selectedAlbum, setSelectedAlbum] = useState(null);
@@ -485,7 +518,14 @@ function App() {
           </span>
         </a>
 
-        <nav aria-label="Bibliothek" className="primary-nav">
+        {isAdmin ? (
+          <nav aria-label="Administration" className="primary-nav">
+            <div className="nav-item active">
+              <Icon name="home" size={19} />
+              <span>Admin-Dashboard</span>
+            </div>
+          </nav>
+        ) : <nav aria-label="Bibliothek" className="primary-nav">
           <button
             aria-current={activeView === "overview" && !selectedAlbum ? "page" : undefined}
             className={`nav-item ${activeView === "overview" && !selectedAlbum ? "active" : ""}`}
@@ -536,9 +576,9 @@ function App() {
               />
             </div>
           )}
-        </nav>
+        </nav>}
 
-        <div className="sidebar-bottom">
+        {!isAdmin && <div className="sidebar-bottom">
           <button
             aria-current={activeView === "shared" ? "page" : undefined}
             className={`nav-item share-link ${activeView === "shared" ? "active" : ""}`}
@@ -549,27 +589,191 @@ function App() {
             <span>Teilen</span>
             <span className="nav-count">{recentlySharedAlbums.length}</span>
           </button>
-        </div>
+        </div>}
       </aside>
 
       <main className="main-panel" id="dashboard">
         <header className="topbar">
-          <h1>{pageTitle}</h1>
+          <h1>{isAdmin ? "Admin-Dashboard" : pageTitle}</h1>
           <div className="topbar-actions">
-            <label className="search-field">
-              <Icon name="search" size={18} />
-              <input
-                aria-label="Fotos suchen"
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Fotos suchen"
-                type="search"
-                value={search}
-              />
-            </label>
+            {!isAdmin && (
+              <label className="search-field">
+                <Icon name="search" size={18} />
+                <input
+                  aria-label="Fotos suchen"
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Fotos suchen"
+                  type="search"
+                  value={search}
+                />
+              </label>
+            )}
+            <div aria-label="Dashboard-Vorschau wechseln" className="role-switch" role="group">
+              <button
+                aria-pressed={!isAdmin}
+                className={!isAdmin ? "selected" : ""}
+                onClick={() => setIsAdmin(false)}
+                type="button"
+              >
+                Nutzer
+              </button>
+              <button
+                aria-pressed={isAdmin}
+                className={isAdmin ? "selected" : ""}
+                onClick={() => setIsAdmin(true)}
+                type="button"
+              >
+                Admin
+              </button>
+            </div>
           </div>
         </header>
 
-        {activeView === "shared" && !selectedAlbum && !search.trim() ? (
+        {isAdmin ? (
+          <section aria-label="Admin-Übersicht" className="admin-content">
+            <div className="admin-welcome">
+              <div>
+                <p>PRIVATER PHOTO-CLOUD-HOST</p>
+                <h2>Dein Server läuft.</h2>
+                <span>Systemstatus und aktuelle Aktivitäten auf einen Blick.</span>
+              </div>
+              <span className="host-online"><i /> Online <span>· seit 14 Tagen</span></span>
+            </div>
+
+            <div className="admin-metrics">
+              {adminMetrics.map((metric) => (
+                <article className="admin-metric-card" key={metric.label}>
+                  <span className="admin-metric-icon">
+                    <Icon name={metric.icon} size={19} />
+                  </span>
+                  <span className="admin-metric-label">{metric.label}</span>
+                  <strong>{metric.value}</strong>
+                  <span className="admin-metric-change">{metric.change}</span>
+                </article>
+              ))}
+            </div>
+
+            <div className="admin-overview-grid">
+              <section aria-labelledby="admin-jobs-title" className="admin-panel admin-jobs-panel">
+                <div className="admin-panel-heading">
+                  <div>
+                    <h2 id="admin-jobs-title">Aktuelle Jobs</h2>
+                    <span>Laufende Uploads und Synchronisierungen</span>
+                  </div>
+                  <span className="admin-panel-count">{adminJobs.length} aktiv</span>
+                </div>
+                <div className="admin-jobs-list">
+                  {adminJobs.map((job) => (
+                    <div className="admin-job-row" key={job.id}>
+                      <span className={`admin-job-icon ${job.color}`}>
+                        <Icon name={job.icon} size={17} />
+                      </span>
+                      <span className="admin-job-main">
+                        <span className="admin-job-heading">
+                          <strong>{job.user}</strong>
+                          <span>{job.amount}</span>
+                        </span>
+                        <span className="admin-job-detail">{job.detail}</span>
+                        <span
+                          aria-label={`${job.progress} Prozent abgeschlossen`}
+                          className="admin-job-progress"
+                          role="progressbar"
+                          aria-valuemax="100"
+                          aria-valuemin="0"
+                          aria-valuenow={job.progress}
+                        >
+                          <i className={job.color} style={{ width: `${job.progress}%` }} />
+                        </span>
+                        <span className="admin-job-percent">{job.progress}% abgeschlossen</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section aria-labelledby="admin-shares-title" className="admin-panel admin-shares-panel">
+                <div className="admin-panel-heading">
+                  <div>
+                    <h2 id="admin-shares-title">Aktive Share-Links</h2>
+                    <span>Freigaben auf deinem Host</span>
+                  </div>
+                  <span className="admin-panel-count">{adminShareLinks.length} aktiv</span>
+                </div>
+                <div className="admin-share-list">
+                  {adminShareLinks.map((share) => (
+                    <div className="admin-share-row" key={share.album}>
+                      <span className="admin-share-icon"><Icon name="shared" size={16} /></span>
+                      <span className="admin-share-main">
+                        <strong>{share.album}</strong>
+                        <span>{share.owner} · {share.access}</span>
+                      </span>
+                      <span className="admin-share-meta">
+                        <strong>{share.views}</strong>
+                        <span><i />{share.status}</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section aria-labelledby="admin-resources-title" className="admin-panel admin-resources-panel">
+                <div className="admin-panel-heading">
+                  <div>
+                    <h2 id="admin-resources-title">Host-Auslastung</h2>
+                    <span>Ressourcenverbrauch in Echtzeit</span>
+                  </div>
+                  <Icon name="devices" size={19} />
+                </div>
+                <div className="admin-resource-list">
+                  {adminResources.map((resource) => (
+                    <div className="admin-resource-row" key={resource.label}>
+                      <span className="admin-resource-heading">
+                        <strong>{resource.label}</strong>
+                        <span>{resource.value}</span>
+                      </span>
+                      <span className="admin-resource-detail">{resource.detail}</span>
+                      <span
+                        aria-label={`${resource.label}: ${resource.value}`}
+                        className="admin-resource-track"
+                        role="progressbar"
+                        aria-valuemax="100"
+                        aria-valuemin="0"
+                        aria-valuenow={resource.percent}
+                      >
+                        <i className={resource.color} style={{ width: `${resource.percent}%` }} />
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+
+            <section aria-labelledby="admin-users-title" className="admin-panel admin-users-panel">
+              <div className="admin-panel-heading">
+                <div>
+                  <h2 id="admin-users-title">Nutzer</h2>
+                  <span>Konten und letzter bekannter Status</span>
+                </div>
+                <span className="admin-panel-count">8 Konten</span>
+              </div>
+              <div className="admin-user-list">
+                {adminUsers.map((user) => (
+                  <div className="admin-user-row" key={user.email}>
+                    <span className={`admin-user-avatar ${user.color}`}>{user.initials}</span>
+                    <span className="admin-user-details">
+                      <strong>{user.name}</strong>
+                      <span>{user.email}</span>
+                    </span>
+                    <span className="admin-user-date">{user.lastSeen}</span>
+                    <span className={`admin-user-status ${user.status === "Offline" ? "offline" : user.status === "Synchronisiert" ? "syncing" : ""}`}>
+                      {user.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </section>
+        ) : activeView === "shared" && !selectedAlbum && !search.trim() ? (
           <section aria-labelledby="all-shared-albums-title" className="shared-library">
             <div className="shared-library-heading">
               <h2 id="all-shared-albums-title">Alle geteilten Alben</h2>
@@ -666,10 +870,10 @@ function App() {
         )}
       </main>
 
-      <aside aria-label="Profil und seltene Aktionen" className="right-panel">
-        <section className="profile-card">
+      <aside aria-label="Profil und seltene Aktionen" className={`right-panel ${isAdmin ? "admin-right-panel" : ""}`}>
+        <section className={`profile-card ${isAdmin ? "admin-profile-card" : ""}`}>
           <div className="profile-cover">
-            <span className="profile-avatar">S</span>
+            <span className="profile-avatar">{isAdmin ? "A" : "S"}</span>
             <button
               aria-label="Profil bearbeiten"
               className="profile-edit"
@@ -680,12 +884,12 @@ function App() {
             </button>
           </div>
           <div className="profile-info">
-            <h2>Sebastian M.</h2>
-            <span>@sebastian</span>
+            <h2>Bastian M.</h2>
+            <span>{isAdmin ? "Administrator" : "@bastian"}</span>
           </div>
         </section>
 
-        <section aria-label="Benachrichtigungen" className="notification-card">
+        {!isAdmin && <section aria-label="Benachrichtigungen" className="notification-card">
           <div className="notification-card-icon">
             <Icon name="bell" size={18} />
             {latestNotification && <span />}
@@ -701,9 +905,14 @@ function App() {
               <span>Alles auf dem neuesten Stand.</span>
             )}
           </div>
-        </section>
+        </section>}
 
-        <section className="utility-section">
+        {isAdmin ? (
+          <section aria-label="Systemstatus" className="admin-status-card">
+            <span className="admin-status-indicator" />
+            <span><strong>Systemstatus</strong><small>Alle Dienste aktiv</small></span>
+          </section>
+        ) : <section className="utility-section">
           <h2>Weitere Optionen</h2>
           <nav aria-label="Weitere Optionen" className="utility-nav">
             {utilityActions.map((action) => (
@@ -723,7 +932,7 @@ function App() {
               </button>
             ))}
           </nav>
-        </section>
+        </section>}
 
         <button
           className="logout-button"

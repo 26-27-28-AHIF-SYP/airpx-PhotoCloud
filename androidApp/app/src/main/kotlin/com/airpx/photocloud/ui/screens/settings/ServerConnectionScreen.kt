@@ -16,18 +16,31 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.airpx.photocloud.data.PhotoCloudApi
+import com.airpx.photocloud.data.SyncSettings
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun ServerConnectionScreen(
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val settings = remember { SyncSettings(context) }
+    val scope = rememberCoroutineScope()
     var serverUrl by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var status by remember { mutableStateOf("") }
+    LaunchedEffect(Unit) { serverUrl = settings.server() }
 
     Column(
         modifier = modifier
@@ -53,12 +66,20 @@ fun ServerConnectionScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(
-            onClick = { /* Validate server URL */ },
+            onClick = {
+                scope.launch {
+                    status = try {
+                        val valid = withContext(Dispatchers.IO) { PhotoCloudApi(serverUrl, "").checkServer() }
+                        if (valid) { settings.saveServer(serverUrl); "Server erreichbar" } else "Server nicht erreichbar"
+                    } catch (_: Exception) { "Server nicht erreichbar" }
+                }
+            },
             enabled = serverUrl.isNotBlank(),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Server prüfen")
         }
+        if (status.isNotBlank()) Text(status, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
         Spacer(modifier = Modifier.height(24.dp))
         Text(
@@ -90,8 +111,17 @@ fun ServerConnectionScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         Button(
-            onClick = { /* Login */ },
-            enabled = email.isNotBlank() && password.isNotBlank(),
+            onClick = {
+                scope.launch {
+                    status = try {
+                        settings.saveServer(serverUrl)
+                        val token = withContext(Dispatchers.IO) { PhotoCloudApi(serverUrl, "").login(email, password) }
+                        settings.saveToken(token)
+                        "Angemeldet"
+                    } catch (e: Exception) { e.message ?: "Anmeldung fehlgeschlagen" }
+                }
+            },
+            enabled = email.isNotBlank() && password.isNotBlank() && serverUrl.isNotBlank(),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Anmelden")

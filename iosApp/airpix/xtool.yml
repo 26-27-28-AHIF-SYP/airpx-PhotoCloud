@@ -1,0 +1,4 @@
+version: 1
+bundleID: com.example.airpix
+iconPath: Sources/airpix/Resources/icon.png
+infoPath: Info.plist

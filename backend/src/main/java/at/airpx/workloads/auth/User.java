@@ -37,6 +37,8 @@ public class User {
         return email;
     }
 
+    public Long getId() { return id; }
+
     public String getPasswordHash() {
         return passwordHash;
     }

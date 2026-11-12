@@ -1,5 +1,6 @@
 package at.airpx.workloads.album;
 
+import at.airpx.workloads.auth.User;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -16,6 +17,10 @@ public class Album {
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
+
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private User owner;
 
     public Long getId() {
         return id;
@@ -36,4 +41,8 @@ public class Album {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+
+    public User getOwner() { return owner; }
+
+    public void setOwner(User owner) { this.owner = owner; }
 }

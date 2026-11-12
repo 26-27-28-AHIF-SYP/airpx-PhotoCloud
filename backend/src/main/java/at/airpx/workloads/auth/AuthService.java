@@ -25,7 +25,7 @@ public class AuthService {
     private final Optional<String> bootstrapEmail;
     private final Optional<String> bootstrapPassword;
     private final Duration tokenLifetime;
-    private final ConcurrentHashMap<String, Instant> activeTokens = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, TokenSession> activeTokens = new ConcurrentHashMap<>();
 
     public AuthService(
             UserRepository userRepository,
@@ -67,25 +67,29 @@ public class AuthService {
         byte[] tokenBytes = new byte[32];
         RANDOM.nextBytes(tokenBytes);
         String token = Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
-        activeTokens.put(token, expiresAt);
+        activeTokens.put(token, new TokenSession(user.get().getId(), expiresAt));
         return Optional.of(new LoginResponse(token, "Bearer", expiresAt));
     }
 
     public boolean isValidToken(String token) {
-        Instant expiresAt = activeTokens.get(token);
-        if (expiresAt == null) {
-            return false;
-        }
-        if (expiresAt.isBefore(Instant.now())) {
+        return authenticatedUserId(token).isPresent();
+    }
+
+    public Optional<Long> authenticatedUserId(String token) {
+        TokenSession session = activeTokens.get(token);
+        if (session == null) return Optional.empty();
+        if (session.expiresAt().isBefore(Instant.now())) {
             activeTokens.remove(token);
-            return false;
+            return Optional.empty();
         }
-        return true;
+        return Optional.of(session.userId());
     }
 
     private String normalizeEmail(String email) {
         return email.trim().toLowerCase(java.util.Locale.ROOT);
     }
+
+    private record TokenSession(Long userId, Instant expiresAt) {}
 
     @Transactional
     public Optional<RegisterResponse> register(String username, String email, String password) {

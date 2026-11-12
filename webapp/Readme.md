@@ -26,3 +26,18 @@ Share-Links und Statusanzeigen sind Mockup-Daten im Frontend. Uploads erscheinen
 nur in der aktuellen Browser-Sitzung und werden nicht in eine Cloud übertragen.
 Automatische Handy-Synchronisierung, echte Admin-Funktionen,
 Profileinstellungen und weitere Aktionen benötigen noch eine Backend-Anbindung.
+
+## Research: Technologie und Synchronisierung
+
+- **Web oder Desktop:** React mit Vite ist für die responsive Fotoübersicht und
+  Verwaltung geeignet und bereits festgelegt. Eine Desktop-App (z. B. mit
+  Electron oder Tauri) würde eine separate Installation erfordern und bietet
+  hier wenig Mehrwert: Fotos entstehen üblicherweise am Handy, die Übersicht
+  funktioniert im Browser.
+- **Technologien und Anbindung:** Die Web-App nutzt React/Vite. Web- und
+  Mobile-App sollen dieselbe REST-API über HTTPS verwenden (JSON für Metadaten,
+  Datei-Uploads für Fotos). Das Backend wird aktuell folgende Technologien verwenden; Quarkus, Java
+  und PostgreSQL.
+- **Automatische Synchronisierung:** Sie gehört in die mobile App. Diese kann
+  neue Fotos im Hintergrund erkennen, Uploads lokal vormerken und bei fehlender
+  Verbindung erneut versuchen.

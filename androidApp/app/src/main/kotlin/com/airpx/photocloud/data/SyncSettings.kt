@@ -16,11 +16,19 @@ private val Context.settingsStore by preferencesDataStore(name = "photocloud_set
 class SyncSettings(private val context: Context) {
     private val serverKey = stringPreferencesKey("server_url")
     private val tokenKey = stringPreferencesKey("access_token")
+    private val emailKey = stringPreferencesKey("account_email")
     private val wifiKey = stringPreferencesKey("wifi_only")
     private val automaticKey = stringPreferencesKey("automatic_backup")
 
     suspend fun saveServer(url: String) = context.settingsStore.edit { it[serverKey] = url.trimEnd('/') }
     suspend fun saveToken(token: String) = context.settingsStore.edit { it[tokenKey] = Base64.getEncoder().encodeToString(aead().encrypt(token.toByteArray(), null)) }
+    suspend fun saveAccountEmail(email: String) = context.settingsStore.edit { it[emailKey] = email.trim() }
+    suspend fun accountEmail() = context.settingsStore.data.first()[emailKey].orEmpty()
+    suspend fun logout() = context.settingsStore.edit {
+        it.remove(tokenKey)
+        it.remove(emailKey)
+        it[automaticKey] = false.toString()
+    }
     suspend fun saveWifiOnly(enabled: Boolean) = context.settingsStore.edit { it[wifiKey] = enabled.toString() }
     suspend fun saveAutomatic(enabled: Boolean) = context.settingsStore.edit { it[automaticKey] = enabled.toString() }
     suspend fun server() = context.settingsStore.data.first()[serverKey].orEmpty()

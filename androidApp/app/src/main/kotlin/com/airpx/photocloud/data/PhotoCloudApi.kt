@@ -14,7 +14,8 @@ class PhotoCloudApi(private val baseUrl: String, private val token: String) {
         val body = (if (response in 200..299) connection.inputStream else connection.errorStream)
             ?.bufferedReader()?.use { it.readText() }.orEmpty()
         connection.disconnect()
-        if (response !in 200..299) error("Anmeldung fehlgeschlagen ($response)")
+        if (response == 401) error("E-Mail-Adresse oder Passwort ist nicht korrekt.")
+        if (response !in 200..299) error("Anmeldung fehlgeschlagen (HTTP $response).")
         return JSONObject(body).getString("accessToken")
     }
 
@@ -49,7 +50,7 @@ class PhotoCloudApi(private val baseUrl: String, private val token: String) {
         }
         val response = connection.responseCode
         connection.disconnect()
-        if (response !in 200..299) error("Upload fehlgeschlagen ($response)")
+        checkResponse(response, "Upload")
     }
 
     private fun request(path: String, method: String, body: String): JSONObject {
@@ -59,8 +60,13 @@ class PhotoCloudApi(private val baseUrl: String, private val token: String) {
         val stream = if (status in 200..299) connection.inputStream else connection.errorStream
         val text = stream?.bufferedReader()?.use { it.readText() }.orEmpty()
         connection.disconnect()
-        if (status !in 200..299) error("Serverantwort $status")
+        checkResponse(status, "Synchronisierung")
         return JSONObject(text)
+    }
+
+    private fun checkResponse(status: Int, action: String) {
+        if (status == 401) error("Sitzung abgelaufen. Bitte erneut anmelden.")
+        if (status !in 200..299) error("$action fehlgeschlagen (HTTP $status).")
     }
 
     private fun open(path: String, method: String, contentType: String): HttpURLConnection {

@@ -8,6 +8,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -61,29 +62,46 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private fun isPhotoPermissionGranted(context: Context): Boolean {
+enum class PhotoPermissionStatus {
+    FULL,
+    PARTIAL,
+    DENIED
+}
+
+fun getPhotoPermissionStatus(context: Context): PhotoPermissionStatus {
     return when {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.READ_MEDIA_IMAGES
-            ) == PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
+            val hasFull = ContextCompat.checkSelfPermission(
+                context, Manifest.permission.READ_MEDIA_IMAGES
             ) == PackageManager.PERMISSION_GRANTED
+            val hasPartial = ContextCompat.checkSelfPermission(
+                context, Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
+            ) == PackageManager.PERMISSION_GRANTED
+            when {
+                hasFull -> PhotoPermissionStatus.FULL
+                hasPartial -> PhotoPermissionStatus.PARTIAL
+                else -> PhotoPermissionStatus.DENIED
+            }
         }
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.READ_MEDIA_IMAGES
-            ) == PackageManager.PERMISSION_GRANTED
+            if (ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.READ_MEDIA_IMAGES
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                PhotoPermissionStatus.FULL
+            } else {
+                PhotoPermissionStatus.DENIED
+            }
         }
         else -> {
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            ) == PackageManager.PERMISSION_GRANTED
+            if (ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.READ_EXTERNAL_STORAGE
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                PhotoPermissionStatus.FULL
+            } else {
+                PhotoPermissionStatus.DENIED
+            }
         }
     }
 }
@@ -98,15 +116,16 @@ fun AirPxAppShell() {
     var previousMainTab by remember { mutableStateOf<Screen>(Screen.Library) }
     var selectedPhotoId by remember { mutableStateOf<String?>(null) }
     var loadedPhotos by remember { mutableStateOf<List<PhotoItem>>(emptyList()) }
+    var userPickedPhotos by remember { mutableStateOf<List<PhotoItem>>(emptyList()) }
 
-    var hasPhotoPermission by remember {
-        mutableStateOf(isPhotoPermissionGranted(context))
+    var permissionStatus by remember {
+        mutableStateOf(getPhotoPermissionStatus(context))
     }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                hasPhotoPermission = isPhotoPermissionGranted(context)
+                permissionStatus = getPhotoPermissionStatus(context)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -117,11 +136,18 @@ fun AirPxAppShell() {
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        val granted = permissions[Manifest.permission.READ_MEDIA_IMAGES] == true ||
-                permissions[Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED] == true ||
-                permissions[Manifest.permission.READ_EXTERNAL_STORAGE] == true
-        hasPhotoPermission = granted
+    ) { _ ->
+        permissionStatus = getPhotoPermissionStatus(context)
+    }
+
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia()
+    ) { uris ->
+        if (uris.isNotEmpty()) {
+            val scanner = MediaStoreScanner(context)
+            val newlyPicked = scanner.scanPhotoItemsFromUris(uris)
+            userPickedPhotos = (userPickedPhotos + newlyPicked).distinctBy { it.contentUri }
+        }
     }
 
     fun requestPermissions() {
@@ -138,6 +164,12 @@ fun AirPxAppShell() {
         permissionLauncher.launch(permissionsToRequest)
     }
 
+    fun pickPhotos() {
+        photoPickerLauncher.launch(
+            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
+        )
+    }
+
     val bottomNavItems = listOf(
         Screen.Library to "Mediathek",
         Screen.Collections to "Sammlungen",
@@ -151,6 +183,7 @@ fun AirPxAppShell() {
             onClose = { selectedPhotoId = null },
             onDeletePhoto = { deleted ->
                 loadedPhotos = loadedPhotos.filter { it.id != deleted.id }
+                userPickedPhotos = userPickedPhotos.filter { it.id != deleted.id }
                 selectedPhotoId = null
             }
         )
@@ -244,11 +277,15 @@ fun AirPxAppShell() {
             val modifier = Modifier.padding(innerPadding)
             when (currentScreen) {
                 Screen.Library -> LibraryScreen(
-                    hasPhotoPermission = hasPhotoPermission,
+                    permissionStatus = permissionStatus,
+                    userPickedPhotos = userPickedPhotos,
                     onRequestPermission = { requestPermissions() },
+                    onSelectMorePhotos = { requestPermissions() },
+                    onPickPhotos = { pickPhotos() },
                     onPhotoClick = { photoId ->
                         val scanner = MediaStoreScanner(context)
-                        loadedPhotos = scanner.scanPhotos()
+                        val scanned = scanner.scanPhotos()
+                        loadedPhotos = (scanned + userPickedPhotos).distinctBy { it.contentUri }
                         selectedPhotoId = photoId
                     },
                     modifier = modifier
@@ -266,18 +303,23 @@ fun AirPxAppShell() {
                 )
                 Screen.ServerConnection -> ServerConnectionScreen(modifier = modifier)
                 Screen.AutoBackup -> AutoBackupScreen(
-                    hasPhotoPermission = hasPhotoPermission,
+                    permissionStatus = permissionStatus,
                     onRequestPermission = { requestPermissions() },
+                    onSelectMorePhotos = { requestPermissions() },
                     modifier = modifier
                 )
                 Screen.Albums -> AlbumsScreen(modifier = modifier)
                 Screen.Favorites -> FavoritesScreen(modifier = modifier)
                 else -> LibraryScreen(
-                    hasPhotoPermission = hasPhotoPermission,
+                    permissionStatus = permissionStatus,
+                    userPickedPhotos = userPickedPhotos,
                     onRequestPermission = { requestPermissions() },
+                    onSelectMorePhotos = { requestPermissions() },
+                    onPickPhotos = { pickPhotos() },
                     onPhotoClick = { photoId ->
                         val scanner = MediaStoreScanner(context)
-                        loadedPhotos = scanner.scanPhotos()
+                        val scanned = scanner.scanPhotos()
+                        loadedPhotos = (scanned + userPickedPhotos).distinctBy { it.contentUri }
                         selectedPhotoId = photoId
                     },
                     modifier = modifier

@@ -38,12 +38,12 @@ In **Auto-Backup** settings:
 - **Auto-Backup** schedules unique periodic WorkManager work (every 12 hours).
 - **Nur WLAN** constrains sync to an unmetered network when enabled.
 - **Jetzt synchronisieren** enqueues unique one-time work, subject to network
-  connectivity and photo permission. It works whether Auto-Backup is on or off.
-  The button is enabled when a server and bearer-token login are saved, media
-  access is granted (full or partial), and no one-time sync is already running
-  or waiting for network. The screen gives the reason when a requirement is
-  missing; a zero count before the first run is shown as “Noch keine
-  Synchronisierung gestartet.”
+  connectivity and photo permission. The button is enabled when a server and
+  bearer-token login are saved, Auto-Backup is enabled, media access is granted
+  (full or partial), and no one-time sync is already running or waiting for
+  network. The screen lists these states and gives each unmet requirement. A
+  zero count before the first run is shown as “Noch keine Synchronisierung
+  gestartet.” A zero pending count does not block a new sync.
 
 After login, **Serververbindung** shows the saved email and an **Abmelden**
 action. Login, network, expired-session, and upload failures are shown on the

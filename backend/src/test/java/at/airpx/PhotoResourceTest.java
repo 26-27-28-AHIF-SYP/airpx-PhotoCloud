@@ -1,6 +1,7 @@
 package at.airpx;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 import io.restassured.response.Response;
 import at.airpx.workloads.album.Album;
 import at.airpx.workloads.album.AlbumRepository;
@@ -21,6 +22,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 @QuarkusTest
+@TestProfile(BackendTestProfile.class)
 class PhotoResourceTest {
     private static final byte[] CONTENT = "photo test bytes".getBytes(java.nio.charset.StandardCharsets.UTF_8);
     private static final String HASH = hash(CONTENT);

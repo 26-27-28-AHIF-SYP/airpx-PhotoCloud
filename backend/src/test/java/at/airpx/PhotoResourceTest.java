@@ -41,6 +41,11 @@ class PhotoResourceTest {
     }
 
     @Test
+    void apiHealthResourceIsRegisteredAtApiRoot() {
+        given().get("/api").then().statusCode(200).body("status", equalTo("up"));
+    }
+
+    @Test
     void photoEndpointsRequireValidBearerToken() {
         given().get("/api/photos").then().statusCode(401);
         given().header("Authorization", "Bearer invalid").get("/api/photos").then().statusCode(401);

@@ -54,3 +54,5 @@ local.properties
 *.apk
 *.aar
 
+# ios app
+iosApp/PhotoCloudSync/.build/

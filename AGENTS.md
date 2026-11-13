@@ -53,10 +53,6 @@ authorization.
 - Every commit must end with these trailers, separated from its body by one
   blank line:
 
-  ```text
-  Co-authored-by: Claude <noreply@anthropic.com>
-  Co-authored-by: Codex <noreply@openai.com>
-  ```
 
 - Never commit `.env`, credentials, tokens, build output, or generated files.
   Use `.env.example` for documented variable changes.

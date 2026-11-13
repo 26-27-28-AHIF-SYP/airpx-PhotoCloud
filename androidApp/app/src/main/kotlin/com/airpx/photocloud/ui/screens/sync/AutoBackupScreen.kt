@@ -53,17 +53,23 @@ fun AutoBackupScreen(
     val workInfos by WorkManager.getInstance(context).getWorkInfosForUniqueWorkFlow(PhotoSyncScheduler.IMMEDIATE)
         .collectAsState(initial = emptyList())
     val work = workInfos.firstOrNull()
+    val automaticWorkInfos by WorkManager.getInstance(context)
+        .getWorkInfosForUniqueWorkFlow(PhotoSyncScheduler.AUTOMATIC)
+        .collectAsState(initial = emptyList())
+    val automaticWork = automaticWorkInfos.firstOrNull()
     val progress = work?.progress
     val uploaded = progress?.getInt("uploaded", work.outputData.getInt("uploaded", 0)) ?: 0
     val pending = progress?.getInt("pending", work.outputData.getInt("pending", 0)) ?: 0
     val failed = progress?.getInt("failed", work.outputData.getInt("failed", 0)) ?: 0
 
     val hasAnyPermission = permissionStatus != PhotoPermissionStatus.DENIED
-    val syncDisabledReason = when {
-        !signedIn -> "Bitte zuerst anmelden und den Server verbinden."
-        !hasAnyPermission -> "Bitte zuerst Medienzugriff erlauben."
-        work?.state?.isFinished == false -> "Synchronisierung läuft oder wartet auf die Netzwerkverbindung."
-        else -> null
+    val syncDisabledReasons = buildList {
+        if (!signedIn) add("Bitte zuerst anmelden und den Server verbinden.")
+        if (!isAutoBackupEnabled) add("Bitte zuerst Auto-Backup aktivieren.")
+        if (!hasAnyPermission) add("Bitte zuerst Medienzugriff erlauben.")
+        if (work?.state?.isFinished == false) {
+            add("Eine Synchronisierung läuft bereits oder wartet auf die Netzwerkverbindung.")
+        }
     }
 
     Column(
@@ -164,20 +170,35 @@ fun AutoBackupScreen(
                 Text(uploaded.toString())
             }
         }
+
+        Text(
+            text = when {
+                !signedIn -> "Anmeldung: Bitte zuerst anmelden."
+                else -> "Anmeldung: Angemeldet"
+            },
+            color = if (signedIn) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error
+        )
+        Text(
+            text = if (isAutoBackupEnabled) "Auto-Backup: aktiviert" else "Auto-Backup: deaktiviert",
+            color = if (isAutoBackupEnabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error
+        )
         if (failed > 0) Text("Fehlgeschlagen: $failed", color = MaterialTheme.colorScheme.error)
-        val errorMessage = progress?.getString("message") ?: work?.outputData?.getString("message")
+        val errorMessage = progress?.getString("message")
+            ?: work?.outputData?.getString("message")
+            ?: automaticWork?.progress?.getString("message")
+            ?: automaticWork?.outputData?.getString("message")
         if (errorMessage != null) Text(errorMessage, color = MaterialTheme.colorScheme.error)
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = { PhotoSyncScheduler.syncNow(context, wifiOnly) },
-            enabled = syncDisabledReason == null,
+            enabled = syncDisabledReasons.isEmpty(),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Jetzt synchronisieren")
         }
-        if (syncDisabledReason != null) {
+        if (syncDisabledReasons.isNotEmpty()) {
             Spacer(modifier = Modifier.height(8.dp))
-            Text(syncDisabledReason, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(syncDisabledReasons.joinToString(separator = "\n"), color = MaterialTheme.colorScheme.error)
         }
     }
 }

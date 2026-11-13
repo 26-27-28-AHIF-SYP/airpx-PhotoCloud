@@ -91,7 +91,14 @@ fun ServerConnectionScreen(
         ) {
             Text("Server prüfen")
         }
-        if (status.isNotBlank()) Text(status, color = if (status.contains("fehlgeschlagen") || status.contains("nicht erreichbar")) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+        if (status.isNotBlank()) Text(
+            status,
+            color = if (status.contains("fehlgeschlagen") || status.contains("nicht erreichbar") || status.contains("nicht korrekt")) {
+                MaterialTheme.colorScheme.error
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            }
+        )
 
         if (loggedIn) {
             Spacer(modifier = Modifier.height(24.dp))

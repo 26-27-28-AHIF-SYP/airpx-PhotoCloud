@@ -1,6 +1,5 @@
 package at.airpx.api;
 
-import at.airpx.workloads.album.AlbumRepository;
 import at.airpx.workloads.album.AlbumService;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;

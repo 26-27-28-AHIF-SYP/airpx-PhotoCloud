@@ -2,7 +2,7 @@ POST http://localhost:8080/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "user@example.com",
+  "email": "account@example.com",
   "password": "testpw"
 }
 
@@ -26,8 +26,8 @@ Content-Type: application/json
 ###
 
 // Vor dem Senden anpassen:
-// sha256sum photo.jpg
-// stat -c%s photo.jpg
+// sha256sum picture.jpg
+// stat -c%s picture.jpg
 @photoHash=HIER_DEN_SHA256_HASH_EINTRAGEN
 @photoSize=HIER_DIE_DATEIGROESSE_EINTRAGEN
 
@@ -36,14 +36,14 @@ Authorization: Bearer 3_b-LsGiSJ0PHfq8ihJrBTFVCV2S7Jdn6Dt2fwu_VNc
 Content-Type: multipart/form-data; boundary=PhotoUploadBoundary
 
 --PhotoUploadBoundary
-Content-Disposition: form-data; name="file"; filename="photo.jpg"
+Content-Disposition: form-data; name="file"; filename="picture.jpg"
 Content-Type: image/jpeg
 
-< ./photo.jpg
+< ./picture.jpg
 --PhotoUploadBoundary
 Content-Disposition: form-data; name="filename"
 
-photo.jpg
+picture.jpg
 --PhotoUploadBoundary
 Content-Disposition: form-data; name="capturedAt"
 

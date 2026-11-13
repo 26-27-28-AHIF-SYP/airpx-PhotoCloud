@@ -1,15 +1,13 @@
-package at.airpx.workloads.auth;
+package at.airpx.workloads.account;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "app_user")
-public class User {
+public class Account {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,10 +22,10 @@ public class User {
     @Column(nullable = false, length = 512)
     private String passwordHash;
 
-    protected User() {
+    protected Account() {
     }
 
-    public User(String username, String email, String passwordHash) {
+    public Account(String username, String email, String passwordHash) {
         this.username = username;
         this.email = email;
         this.passwordHash = passwordHash;

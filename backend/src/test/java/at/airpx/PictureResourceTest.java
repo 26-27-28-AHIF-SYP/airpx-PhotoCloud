@@ -1,12 +1,13 @@
 package at.airpx;
 
+import at.airpx.workloads.account.Account;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.restassured.response.Response;
 import at.airpx.workloads.album.Album;
 import at.airpx.workloads.album.AlbumRepository;
-import at.airpx.workloads.auth.UserRepository;
-import at.airpx.workloads.photo.PhotoRepository;
+import at.airpx.workloads.account.AccountRepository;
+import at.airpx.workloads.picture.PictureRepository;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 
@@ -23,12 +24,14 @@ import static org.hamcrest.Matchers.*;
 
 @QuarkusTest
 @TestProfile(BackendTestProfile.class)
-class PhotoResourceTest {
+class PictureResourceTest {
     private static final byte[] CONTENT = "photo test bytes".getBytes(java.nio.charset.StandardCharsets.UTF_8);
     private static final String HASH = hash(CONTENT);
     @Inject AlbumRepository albumRepository;
-    @Inject UserRepository userRepository;
-    @Inject PhotoRepository photoRepository;
+    @Inject
+    AccountRepository accountRepository;
+    @Inject
+    PictureRepository pictureRepository;
 
     private static String hash(byte[] bytes) {
         try { return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes)); }
@@ -99,7 +102,7 @@ class PhotoResourceTest {
                 .multiPart("mimeType", "image/jpeg").post("/api/photos")
                 .then().statusCode(201).body("filename", equalTo("outside.jpg"));
 
-        var saved = photoRepository.findAll(userRepository.findByEmail("test@example.com").orElseThrow().getId()).stream()
+        var saved = pictureRepository.findAll(accountRepository.findByEmail("test@example.com").orElseThrow().getId()).stream()
                 .filter(item -> item.getSha256().equals(hash)).findFirst().orElseThrow();
         assertThat(saved.getStorageName(), matchesPattern("[0-9a-f-]{36}"));
         assertThat(Files.isRegularFile(Path.of("target/test-photos").resolve(saved.getStorageName())), is(true));
@@ -125,8 +128,8 @@ class PhotoResourceTest {
         given().contentType("application/json").body("""
                 {"username":"%s","email":"%s","password":"securePassword123"}
                 """.formatted(otherName, otherEmail)).post("/api/auth/register").then().statusCode(201);
-        var owner = userRepository.findByEmail("test@example.com").orElseThrow();
-        var other = userRepository.findByEmail(otherEmail).orElseThrow();
+        var owner = accountRepository.findByEmail("test@example.com").orElseThrow();
+        var other = accountRepository.findByEmail(otherEmail).orElseThrow();
         Album ownAlbum = createAlbum(owner, "owned by test user");
         Album otherAlbum = createAlbum(other, "owned by other user");
         byte[] bytes = UUID.randomUUID().toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
@@ -144,7 +147,7 @@ class PhotoResourceTest {
                 .multiPart("albumId", albumId).post("/api/photos");
     }
 
-    private Album createAlbum(at.airpx.workloads.auth.User owner, String name) {
+    private Album createAlbum(Account owner, String name) {
         Album album = new Album();
         album.setName(name);
         album.setCreatedAt(LocalDateTime.now());

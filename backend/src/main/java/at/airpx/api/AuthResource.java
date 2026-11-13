@@ -3,7 +3,7 @@ package at.airpx.api;
 import at.airpx.model.auth.LoginRequest;
 import at.airpx.model.auth.RegisterRequest;
 import at.airpx.model.error.ErrorResponse;
-import at.airpx.workloads.auth.AuthService;
+import at.airpx.workloads.account.AuthService;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;

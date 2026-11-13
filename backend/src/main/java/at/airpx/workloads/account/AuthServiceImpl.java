@@ -1,4 +1,4 @@
-package at.airpx.workloads.auth;
+package at.airpx.workloads.account;
 
 import at.airpx.model.auth.LoginResponse;
 import at.airpx.model.auth.RegisterResponse;
@@ -16,10 +16,10 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScoped
-public class AuthService {
+public class AuthServiceImpl implements AuthService {
 
     private static final SecureRandom RANDOM = new SecureRandom();
-    private final UserRepository userRepository;
+    private final AccountRepository accountRepository;
     private final PasswordHasher passwordHasher;
     private final Optional<String> bootstrapUsername;
     private final Optional<String> bootstrapEmail;
@@ -27,14 +27,14 @@ public class AuthService {
     private final Duration tokenLifetime;
     private final ConcurrentHashMap<String, TokenSession> activeTokens = new ConcurrentHashMap<>();
 
-    public AuthService(
-            UserRepository userRepository,
+    public AuthServiceImpl(
+            AccountRepository accountRepository,
             PasswordHasher passwordHasher,
             @ConfigProperty(name = "auth.bootstrap.username") Optional<String> bootstrapUsername,
             @ConfigProperty(name = "auth.bootstrap.email") Optional<String> bootstrapEmail,
             @ConfigProperty(name = "auth.bootstrap.password") Optional<String> bootstrapPassword,
             @ConfigProperty(name = "auth.token-lifetime", defaultValue = "PT8H") Duration tokenLifetime) {
-        this.userRepository = userRepository;
+        this.accountRepository = accountRepository;
         this.passwordHasher = passwordHasher;
         this.bootstrapUsername = bootstrapUsername;
         this.bootstrapEmail = bootstrapEmail;
@@ -50,15 +50,16 @@ public class AuthService {
         }
 
         String normalizedEmail = normalizeEmail(bootstrapEmail.get());
-        if (userRepository.findByEmail(normalizedEmail).isEmpty()) {
-            User bootstrapUser = new User(bootstrapUsername.get(), normalizedEmail, passwordHasher.hash(bootstrapPassword.get()));
-            userRepository.persist(bootstrapUser);
+        if (accountRepository.findByEmail(normalizedEmail).isEmpty()) {
+            Account bootstrapAccount = new Account(bootstrapUsername.get(), normalizedEmail, passwordHasher.hash(bootstrapPassword.get()));
+            accountRepository.persist(bootstrapAccount);
         }
     }
 
     @Transactional
+    @Override
     public Optional<LoginResponse> login(String email, String password) {
-        Optional<User> user = userRepository.findByEmail(normalizeEmail(email));
+        Optional<Account> user = accountRepository.findByEmail(normalizeEmail(email));
         if (user.isEmpty() || !passwordHasher.matches(password, user.get().getPasswordHash())) {
             return Optional.empty();
         }
@@ -71,10 +72,12 @@ public class AuthService {
         return Optional.of(new LoginResponse(token, "Bearer", expiresAt));
     }
 
+    @Override
     public boolean isValidToken(String token) {
         return authenticatedUserId(token).isPresent();
     }
 
+    @Override
     public Optional<Long> authenticatedUserId(String token) {
         TokenSession session = activeTokens.get(token);
         if (session == null) return Optional.empty();
@@ -92,18 +95,19 @@ public class AuthService {
     private record TokenSession(Long userId, Instant expiresAt) {}
 
     @Transactional
+    @Override
     public Optional<RegisterResponse> register(String username, String email, String password) {
         String normalizedEmail = normalizeEmail(email);
         String normalizedUsername = username.trim();
 
-        if (userRepository.findByEmail(normalizedEmail).isPresent() ||
-            userRepository.findByUsername(normalizedUsername).isPresent()) {
+        if (accountRepository.findByEmail(normalizedEmail).isPresent() ||
+            accountRepository.findByUsername(normalizedUsername).isPresent()) {
             return Optional.empty();
         }
 
-        User user = new User(username, email, passwordHasher.hash(password));
+        Account account = new Account(username, email, passwordHasher.hash(password));
 
-        userRepository.persist(user);
+        accountRepository.persist(account);
 
         return Optional.of(new RegisterResponse(normalizedUsername, normalizedEmail));
     }

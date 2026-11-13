@@ -15,7 +15,7 @@ Backend work includes:
 - Backend services and DTOs
 - Backend tests, integration tests, and deployment configuration
 
-Do not assume that planned photo, album, sharing, AI, or encryption features
+Do not assume that planned picture, album, sharing, AI, or encryption features
 already exist. The project proposal describes the product direction; the Java
 sources and current API documentation are the source of truth for implemented
 behavior.
@@ -153,15 +153,15 @@ PHOTO_MAX_BODY_SIZE
 
 `PHOTO_STORAGE_DIRECTORY` defaults to `./data/photos` in the application and
 is set to `/var/lib/photocloud/photos` by the Compose example. Compose mounts
-that container directory on the `photo-data` Docker volume. `PHOTO_MAX_BODY_SIZE`
+that container directory on the `picture-data` Docker volume. `PHOTO_MAX_BODY_SIZE`
 sets `quarkus.http.limits.max-body-size` and defaults to `100M`.
 
 The bootstrap values are optional. If all required bootstrap values are
-present, the application creates the user only when that normalized email does
-not already exist. It does not update an existing user's password.
+present, the application creates the account only when that normalized email does
+not already exist. It does not update an existing account's password.
 
 Never put real credentials in tracked files. The test configuration contains a
-deliberate test-only user and must not be used as a production credential
+deliberate test-only account and must not be used as a production credential
 source.
 
 Be careful with schema-management settings:
@@ -192,15 +192,15 @@ All `/api/photos` routes require `Authorization: Bearer <token>`. The missing
 hash request is JSON `{ "hashes": ["<sha256>"] }` and returns
 `{ "missingHashes": [...] }`. Upload multipart fields are `file`, `filename`,
 `capturedAt`, `sha256`, `size`, and `mimeType`; `albumId` is optional and must
-identify an album owned by the authenticated user. Uploads accept `image/*`,
+identify an album owned by the authenticated account. Uploads accept `image/*`,
 are SHA-256 checked on the server, and are stored under generated filenames.
-The photo list returns only the authenticated user's metadata.
+The picture list returns only the authenticated account's metadata.
 
 The login request is validated with Bean Validation and uses:
 
 ```json
 {
-  "email": "user@example.com",
+  "email": "account@example.com",
   "password": "secret"
 }
 ```
@@ -209,8 +209,8 @@ The registration request uses:
 
 ```json
 {
-  "username": "user",
-  "email": "user@example.com",
+  "username": "account",
+  "email": "account@example.com",
   "password": "secret"
 }
 ```
@@ -230,14 +230,14 @@ Current authentication behavior:
 
 When adding protected endpoints, do not merely accept an `Authorization`
 header. Validate the bearer token through a shared authentication mechanism and
-derive the authenticated user from it. Do not duplicate token parsing or
+derive the authenticated account from it. Do not duplicate token parsing or
 authentication logic in individual resources.
 
 ### Authentication rules for protected endpoints
 
-Every endpoint that accesses user-specific or private data must be protected
+Every endpoint that accesses account-specific or private data must be protected
 by the central authentication mechanism. A resource must not implement its own
-token parsing, token format checks, expiration checks, or user lookup.
+token parsing, token format checks, expiration checks, or account lookup.
 
 Use the standard header format:
 
@@ -248,16 +248,16 @@ Authorization: Bearer <access-token>
 Authentication handling must:
 
 - reject missing, malformed, unknown, and expired tokens with `401 Unauthorized`;
-- extract the authenticated user identity from the validated token context;
+- extract the authenticated account identity from the validated token context;
 - enforce ownership or authorization rules in the service layer before reading
-  or changing user-specific data;
+  or changing account-specific data;
 - distinguish authentication failures (`401`) from authenticated users lacking
   permission (`403`);
 - never accept bearer tokens in query parameters, request bodies, filenames, or
   cookies unless a later API decision explicitly defines that behavior;
 - never log access tokens, passwords, password hashes, or complete
   `Authorization` headers;
-- avoid revealing whether a user account exists through login error messages;
+- avoid revealing whether a account account exists through login error messages;
 - keep token lifetime and token-storage behavior configurable and documented.
 
 When introducing a new authentication implementation, first check whether the
@@ -270,8 +270,8 @@ For each new protected endpoint, add tests for at least:
 1. no `Authorization` header;
 2. malformed or invalid token;
 3. expired token, when expiration can be controlled in the test;
-4. valid token accessing the authenticated user's own data;
-5. valid token attempting to access another user's data.
+4. valid token accessing the authenticated account's own data;
+5. valid token attempting to access another account's data.
 
 ## REST resource conventions
 
@@ -314,7 +314,7 @@ unexpected failures into successful responses.
   entity change.
 - Do not use `drop-and-create` as a production migration strategy.
 
-The current user table is named `app_user` because `user` can conflict with
+The current account table is named `app_user` because `account` can conflict with
 database-reserved identifiers. Preserve this explicit table name unless a
 migration is planned.
 
@@ -362,7 +362,7 @@ The OpenAPI contract is stored outside this directory at
 status code, or authentication behavior, update the corresponding OpenAPI
 entry if the documentation is in scope.
 
-Keep the documented contract honest. The photo endpoints above are implemented
+Keep the documented contract honest. The picture endpoints above are implemented
 in `api/PhotoResource.java`; check its paths and tests when changing them.
 
 ## Security rules
@@ -374,7 +374,7 @@ in `api/PhotoResource.java`; check its paths and tests when changing them.
   password hashing helper rather than comparing plaintext passwords.
 - Return generic login failure messages to avoid revealing whether an email
   exists.
-- Treat user-supplied filenames, metadata, and media content as untrusted.
+- Treat account-supplied filenames, metadata, and media content as untrusted.
 - Do not add a new authentication implementation for one endpoint when a
   shared service or filter can be used.
 - Remember that the current in-memory token store is not suitable for a
@@ -410,7 +410,7 @@ finishing the work. This applies to feature implementations, substantial bug
 fixes, API changes, authentication changes, database changes, and other work
 that affects more than a few lines. Do not produce a commit recommendation for
 minor edits such as a typo correction or a change limited to a few lines unless
-the user asks for one.
+the account asks for one.
 
 The recommendation must:
 
@@ -426,9 +426,9 @@ Use concise, imperative Conventional Commit-style messages where appropriate,
 for example:
 
 ```text
-feat(auth): add user registration
+feat(auth): add account registration
 fix(auth): normalize registration email before persistence
 test(auth): cover duplicate registration conflicts
 ```
 
-Do not create a commit automatically unless the user explicitly requests it.
+Do not create a commit automatically unless the account explicitly requests it.

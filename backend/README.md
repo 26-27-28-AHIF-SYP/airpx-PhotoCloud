@@ -20,7 +20,7 @@ the image. The Dockerfile copies the already packaged `target/quarkus-app/`;
 Do not commit `.env`. The default development API base URL is
 `http://localhost:8080/api`. Photo files are stored under
 `PHOTO_STORAGE_DIRECTORY` (Compose default `/var/lib/photocloud/photos`) and
-persist in the `photo-data` volume. `PHOTO_MAX_BODY_SIZE` controls Quarkus's
+persist in the `picture-data` volume. `PHOTO_MAX_BODY_SIZE` controls Quarkus's
 maximum request size (default `100M`).
 
 ## Endpoints
@@ -29,17 +29,17 @@ maximum request size (default `100M`).
 - `GET /api/albums` — list albums.
 - `POST /api/auth/login` — authenticate with email and password; returns a
   bearer token.
-- `POST /api/auth/register` — register a user.
+- `POST /api/auth/register` — register a account.
 - `POST /api/photos/missing` — authenticated batch check. JSON body:
   `{ "hashes": ["<sha256>"] }`; response contains `missingHashes`.
 - `POST /api/photos` — authenticated multipart upload. Fields: `file`,
   `filename`, `capturedAt`, `sha256`, `size`, `mimeType`, optional `albumId`.
   The server accepts image MIME types, verifies size and SHA-256, generates the
-  disk filename, and associates the photo with the authenticated user.
-- `GET /api/photos` — authenticated metadata list for the current user.
+  disk filename, and associates the picture with the authenticated account.
+- `GET /api/photos` — authenticated metadata list for the current account.
 
-All photo routes require `Authorization: Bearer <token>`. An optional album ID
-must belong to the authenticated user.
+All picture routes require `Authorization: Bearer <token>`. An optional album ID
+must belong to the authenticated account.
 
 ## Build and test
 
@@ -49,6 +49,6 @@ must belong to the authenticated user.
 ```
 
 Tests use Quarkus Dev Services/Testcontainers and require Docker. Production
-configuration reads database, bootstrap authentication, photo directory, and
+configuration reads database, bootstrap authentication, picture directory, and
 upload-size values from the environment; see `.env.example` and
 `src/main/resources/application.properties`.

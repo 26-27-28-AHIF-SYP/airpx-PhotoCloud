@@ -1,6 +1,6 @@
 package at.airpx.api;
 
-import at.airpx.workloads.auth.AuthService;
+import at.airpx.workloads.account.AuthService;
 import jakarta.annotation.Priority;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;

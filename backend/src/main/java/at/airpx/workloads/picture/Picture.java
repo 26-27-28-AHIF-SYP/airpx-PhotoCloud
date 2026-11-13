@@ -1,14 +1,14 @@
-package at.airpx.workloads.photo;
+package at.airpx.workloads.picture;
 
-import at.airpx.workloads.auth.User;
+import at.airpx.workloads.account.Account;
 import jakarta.persistence.*;
 import java.time.Instant;
 
 @Entity
 @Table(name = "photo", uniqueConstraints = @UniqueConstraint(columnNames = {"owner_id", "sha256_hash"}))
-public class Photo {
+public class Picture {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
-    @ManyToOne(optional = false) @JoinColumn(name = "owner_id", nullable = false) private User owner;
+    @ManyToOne(optional = false) @JoinColumn(name = "owner_id", nullable = false) private Account owner;
     @Column(name = "sha256_hash", nullable = false, length = 64) private String sha256;
     @Column(name = "original_filename", nullable = false) private String filename;
     @Column(name = "captured_at") private Instant capturedAt;
@@ -17,8 +17,8 @@ public class Photo {
     @Column(name = "album_id") private Long albumId;
     @Column(name = "storage_name", nullable = false, unique = true) private String storageName;
 
-    protected Photo() {}
-    public Photo(User owner, String sha256, String filename, Instant capturedAt, long size, String mimeType, Long albumId, String storageName) {
+    protected Picture() {}
+    public Picture(Account owner, String sha256, String filename, Instant capturedAt, long size, String mimeType, Long albumId, String storageName) {
         this.owner = owner; this.sha256 = sha256; this.filename = filename; this.capturedAt = capturedAt;
         this.size = size; this.mimeType = mimeType; this.albumId = albumId; this.storageName = storageName;
     }

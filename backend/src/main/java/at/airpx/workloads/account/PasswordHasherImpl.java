@@ -1,7 +1,6 @@
-package at.airpx.workloads.auth;
+package at.airpx.workloads.account;
 
 import jakarta.enterprise.context.ApplicationScoped;
-
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import java.security.GeneralSecurityException;
@@ -10,20 +9,21 @@ import java.security.SecureRandom;
 import java.util.Base64;
 
 @ApplicationScoped
-public class PasswordHasher {
-
+public class PasswordHasherImpl implements PasswordHasher {
     private static final String ALGORITHM = "PBKDF2WithHmacSHA256";
     private static final int ITERATIONS = 600_000;
     private static final int KEY_LENGTH = 256;
     private static final int SALT_LENGTH = 16;
     private static final SecureRandom RANDOM = new SecureRandom();
 
+    @Override
     public String hash(String password) {
         byte[] salt = new byte[SALT_LENGTH];
         RANDOM.nextBytes(salt);
         return encode(salt, derive(password, salt));
     }
 
+    @Override
     public boolean matches(String password, String encodedHash) {
         try {
             String[] parts = encodedHash.split("\\$", -1);

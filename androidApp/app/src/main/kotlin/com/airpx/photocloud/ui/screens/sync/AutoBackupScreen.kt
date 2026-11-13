@@ -162,7 +162,7 @@ fun AutoBackupScreen(
             Text("Noch keine Synchronisierung gestartet.", color = MaterialTheme.colorScheme.onSurfaceVariant)
         } else {
             Text("$found Fotos gefunden, $uploaded hochgeladen, $failed fehlgeschlagen")
-            if (found == 0 && work.state != androidx.work.WorkInfo.State.ENQUEUED) {
+            if (found == 0 && (work.state.isFinished || progress?.getInt("found", -1) == 0)) {
                 Text("Keine Fotos gefunden. Prüfe den Medienzugriff", color = MaterialTheme.colorScheme.error)
             }
             Row(modifier = Modifier.fillMaxWidth()) {

@@ -9,4 +9,4 @@ data class SyncPhoto(
     val sha256: String
 )
 
-data class SyncSummary(val uploaded: Int, val pending: Int, val failed: Int)
+data class SyncSummary(val found: Int, val uploaded: Int, val pending: Int, val failed: Int)

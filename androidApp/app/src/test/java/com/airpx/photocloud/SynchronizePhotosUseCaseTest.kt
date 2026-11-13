@@ -32,11 +32,32 @@ class SynchronizePhotosUseCaseTest {
             override suspend fun upload(photo: SyncPhoto) { error("network unavailable") }
         }
 
-        val summary = SynchronizePhotosUseCase(repository)()
+        var reportedFailure: Exception? = null
+        val summary = SynchronizePhotosUseCase(repository)(onUploadFailure = { _, error -> reportedFailure = error })
 
         assertEquals(0, summary.uploaded)
         assertEquals(0, summary.pending)
         assertEquals(1, summary.failed)
+        assertEquals("network unavailable", reportedFailure?.message)
+    }
+
+    @Test fun reportsScannedPhotosAsPendingThenUploaded() = runTest {
+        val photos = (1..4).map { photo("hash-$it") }
+        val repository = object : SyncRepository {
+            override suspend fun scanPhotos() = photos
+            override suspend fun missingHashes(hashes: List<String>) = hashes.toSet()
+            override suspend fun upload(photo: SyncPhoto) = Unit
+        }
+        val statuses = mutableListOf<com.airpx.photocloud.domain.model.SyncSummary>()
+
+        val summary = SynchronizePhotosUseCase(repository)(onProgress = { statuses += it })
+
+        assertEquals(4, statuses.first().found)
+        assertEquals(4, statuses.first().pending)
+        assertEquals(4, summary.found)
+        assertEquals(4, summary.uploaded)
+        assertEquals(0, summary.pending)
+        assertEquals(4, statuses.last().uploaded)
     }
 
     private fun photo(hash: String) = SyncPhoto("content://$hash", "$hash.jpg", null, "image/jpeg", 1, hash)

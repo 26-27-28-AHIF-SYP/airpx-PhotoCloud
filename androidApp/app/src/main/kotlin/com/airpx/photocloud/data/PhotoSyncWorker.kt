@@ -14,8 +14,13 @@ import androidx.work.workDataOf
 import com.airpx.photocloud.domain.usecase.SynchronizePhotosUseCase
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import android.util.Log
 
 class PhotoSyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
+    private var foundCount = 0
+    private var uploadedCount = 0
+    private var pendingCount = 0
+    private var failedCount = 0
     override suspend fun doWork(): Result {
         setProgress(workDataOf())
         val settings = SyncSettings(applicationContext)
@@ -24,11 +29,23 @@ class PhotoSyncWorker(context: Context, params: WorkerParameters) : CoroutineWor
         if (base.isBlank()) return Result.failure(workDataOf("message" to "Server-URL fehlt"))
         return try {
             val useCase = SynchronizePhotosUseCase(PhotoSyncRepository(applicationContext, PhotoCloudApi(base, token)))
-            val summary = useCase { status ->
-                setProgress(workDataOf("uploaded" to status.uploaded, "pending" to status.pending, "failed" to status.failed))
-            }
+            var previousUploaded = 0
+            val summary = useCase(onProgress = { status ->
+                foundCount = status.found
+                uploadedCount = status.uploaded
+                pendingCount = status.pending
+                failedCount = status.failed
+                Log.d("PhotoSync", "Progress found=${status.found} missing=${status.pending + status.uploaded + status.failed} uploaded=${status.uploaded} failed=${status.failed}")
+                if (status.uploaded > previousUploaded) Log.d("PhotoSync", "Uploaded count=${status.uploaded}")
+                previousUploaded = status.uploaded
+                setProgress(workDataOf("found" to status.found, "uploaded" to status.uploaded, "pending" to status.pending, "failed" to status.failed))
+            }, onUploadFailure = { _, error ->
+                Log.e("PhotoSync", "Photo upload failed", error)
+            })
+            Log.d("PhotoSync", "Sync complete found=${summary.found} uploaded=${summary.uploaded} failed=${summary.failed}")
             if (summary.failed > 0) {
                 setProgress(workDataOf(
+                    "found" to summary.found,
                     "uploaded" to summary.uploaded,
                     "pending" to summary.pending,
                     "failed" to summary.failed,
@@ -37,18 +54,20 @@ class PhotoSyncWorker(context: Context, params: WorkerParameters) : CoroutineWor
                 Result.retry()
             } else {
                 Result.success(workDataOf(
+                    "found" to summary.found,
                     "uploaded" to summary.uploaded,
                     "pending" to summary.pending,
                     "failed" to summary.failed
                 ))
             }
         } catch (e: Exception) {
+            Log.e("PhotoSync", "Sync run failed", e)
             val message = if (e is IOException) {
                 "Server nicht erreichbar. URL und Netzwerk prüfen."
             } else {
                 e.message ?: "Synchronisierung fehlgeschlagen."
             }
-            setProgress(workDataOf("message" to message))
+            setProgress(workDataOf("found" to foundCount, "uploaded" to uploadedCount, "pending" to pendingCount, "failed" to maxOf(1, failedCount), "message" to message))
             Result.retry()
         }
     }

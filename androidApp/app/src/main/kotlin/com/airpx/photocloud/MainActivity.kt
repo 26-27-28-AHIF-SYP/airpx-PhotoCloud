@@ -38,6 +38,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.airpx.photocloud.data.mediastore.MediaStoreScanner
+import com.airpx.photocloud.data.SelectedPhotoUris
 import com.airpx.photocloud.domain.model.PhotoItem
 import com.airpx.photocloud.ui.navigation.Screen
 import com.airpx.photocloud.ui.screens.albums.AlbumsScreen
@@ -144,6 +145,14 @@ fun AirPxAppShell() {
         contract = ActivityResultContracts.PickMultipleVisualMedia()
     ) { uris ->
         if (uris.isNotEmpty()) {
+            uris.forEach { uri ->
+                try {
+                    context.contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                } catch (e: SecurityException) {
+                    android.util.Log.e("PhotoPicker", "Could not persist photo access grant", e)
+                }
+            }
+            SelectedPhotoUris.add(context, uris)
             val scanner = MediaStoreScanner(context)
             val newlyPicked = scanner.scanPhotoItemsFromUris(uris)
             userPickedPhotos = (userPickedPhotos + newlyPicked).distinctBy { it.contentUri }

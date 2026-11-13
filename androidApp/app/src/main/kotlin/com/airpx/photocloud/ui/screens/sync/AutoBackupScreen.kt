@@ -58,6 +58,7 @@ fun AutoBackupScreen(
         .collectAsState(initial = emptyList())
     val automaticWork = automaticWorkInfos.firstOrNull()
     val progress = work?.progress
+    val found = progress?.getInt("found", work.outputData.getInt("found", 0)) ?: 0
     val uploaded = progress?.getInt("uploaded", work.outputData.getInt("uploaded", 0)) ?: 0
     val pending = progress?.getInt("pending", work.outputData.getInt("pending", 0)) ?: 0
     val failed = progress?.getInt("failed", work.outputData.getInt("failed", 0)) ?: 0
@@ -160,6 +161,10 @@ fun AutoBackupScreen(
         if (work == null) {
             Text("Noch keine Synchronisierung gestartet.", color = MaterialTheme.colorScheme.onSurfaceVariant)
         } else {
+            Text("$found Fotos gefunden, $uploaded hochgeladen, $failed fehlgeschlagen")
+            if (found == 0 && work.state != androidx.work.WorkInfo.State.ENQUEUED) {
+                Text("Keine Fotos gefunden. Prüfe den Medienzugriff", color = MaterialTheme.colorScheme.error)
+            }
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text("Ausstehend:", modifier = Modifier.weight(1f))
                 Text(pending.toString())

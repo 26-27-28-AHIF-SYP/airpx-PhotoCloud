@@ -3,6 +3,7 @@ package com.airpx.photocloud.data
 import android.content.Context
 import android.provider.MediaStore
 import android.net.Uri
+import android.util.Log
 import com.airpx.photocloud.domain.model.SyncPhoto
 import com.airpx.photocloud.domain.repository.SyncRepository
 import kotlinx.coroutines.Dispatchers
@@ -29,17 +30,36 @@ class PhotoSyncRepository(private val context: Context, private val api: PhotoCl
                 val uri = Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, cursor.getLong(idCol).toString())
                 val mediaId = cursor.getLong(idCol).toString()
                 val modified = cursor.getLong(modifiedCol)
-                val hash = hashCache.get(mediaId, modified) ?: context.contentResolver.openInputStream(uri)?.use { input ->
-                    val digest = MessageDigest.getInstance("SHA-256")
-                    val buffer = ByteArray(64 * 1024)
-                    while (true) { val count = input.read(buffer); if (count < 0) break; digest.update(buffer, 0, count) }
-                    digest.digest().joinToString("") { byte -> "%02x".format(byte) }.also { hashCache.put(mediaId, modified, it) }
-                } ?: continue
+                val hash = hash(mediaId, modified, uri)
                 val millis = cursor.getLong(dateCol)
                 photos += SyncPhoto(uri.toString(), cursor.getString(nameCol) ?: "photo", if (millis > 0) Instant.ofEpochMilli(millis).toString() else null,
                     cursor.getString(mimeCol) ?: "image/jpeg", cursor.getLong(sizeCol), hash)
             }
         }
+        val scannedUris = photos.mapTo(mutableSetOf()) { it.uri }
+        SelectedPhotoUris.get(context).filter { it.toString() !in scannedUris }.forEach { uri ->
+            val mime = context.contentResolver.getType(uri) ?: return@forEach
+            if (!mime.startsWith("image/")) return@forEach
+            var filename = uri.lastPathSegment?.substringAfterLast('/')?.ifBlank { "photo" } ?: "photo"
+            var size = 0L
+            var modified = 0L
+            var capturedAt: String? = null
+            context.contentResolver.query(uri, arrayOf(
+                MediaStore.MediaColumns.DISPLAY_NAME,
+                MediaStore.MediaColumns.SIZE,
+                MediaStore.MediaColumns.DATE_MODIFIED,
+                MediaStore.Images.ImageColumns.DATE_TAKEN
+            ), null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME).takeIf { it >= 0 && !cursor.isNull(it) }?.let { filename = cursor.getString(it) }
+                    cursor.getColumnIndex(MediaStore.MediaColumns.SIZE).takeIf { it >= 0 && !cursor.isNull(it) }?.let { size = cursor.getLong(it) }
+                    cursor.getColumnIndex(MediaStore.MediaColumns.DATE_MODIFIED).takeIf { it >= 0 && !cursor.isNull(it) }?.let { modified = cursor.getLong(it) }
+                    cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATE_TAKEN).takeIf { it >= 0 && !cursor.isNull(it) }?.let { capturedAt = Instant.ofEpochMilli(cursor.getLong(it)).toString() }
+                }
+            }
+            photos += SyncPhoto(uri.toString(), filename, capturedAt, mime, size, hash(uri.toString(), modified, uri))
+        }
+        Log.d("PhotoSync", "Images found by scan=${photos.size}")
         photos
     }
 
@@ -52,4 +72,12 @@ class PhotoSyncRepository(private val context: Context, private val api: PhotoCl
                 ?: error("Datei nicht verfügbar")
         }
     }
+
+    private fun hash(cacheId: String, modified: Long, uri: Uri): String = hashCache.get(cacheId, modified)
+        ?: context.contentResolver.openInputStream(uri)?.use { input ->
+            val digest = MessageDigest.getInstance("SHA-256")
+            val buffer = ByteArray(64 * 1024)
+            while (true) { val count = input.read(buffer); if (count < 0) break; digest.update(buffer, 0, count) }
+            digest.digest().joinToString("") { byte -> "%02x".format(byte) }.also { hashCache.put(cacheId, modified, it) }
+        } ?: error("Foto kann nicht gelesen werden")
 }

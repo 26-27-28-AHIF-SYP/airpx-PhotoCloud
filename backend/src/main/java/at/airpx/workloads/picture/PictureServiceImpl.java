@@ -20,29 +20,29 @@ import java.util.UUID;
 @ApplicationScoped
 public class PictureServiceImpl implements PictureService {
     private final PictureRepository photos;
-    private final AccountRepository users;
+    private final AccountRepository accounts;
     private final AlbumRepository albums;
     private final Path directory;
 
-    public PictureServiceImpl(PictureRepository photos, AccountRepository users, AlbumRepository albums,
+    public PictureServiceImpl(PictureRepository photos, AccountRepository accounts, AlbumRepository albums,
                               @ConfigProperty(name = "photo.storage.directory", defaultValue = "./data/photos") String directory) {
-        this.photos = photos; this.users = users; this.albums = albums; this.directory = Path.of(directory);
+        this.photos = photos; this.accounts = accounts; this.albums = albums; this.directory = Path.of(directory);
     }
 
     @Override
-    public List<PictureDTO> list(long userId) { return photos.findAll(userId).stream().map(PictureServiceImpl::dto).toList(); }
+    public List<PictureDTO> list(long accountId) { return photos.findAll(accountId).stream().map(PictureServiceImpl::dto).toList(); }
     @Override
-    public List<String> missing(long userId, List<String> hashes) {
-        var existing = photos.existingHashes(userId, hashes.stream().map(String::toLowerCase).toList());
+    public List<String> missing(long accountId, List<String> hashes) {
+        var existing = photos.existingHashes(accountId, hashes.stream().map(String::toLowerCase).toList());
         return hashes.stream().map(String::toLowerCase).filter(hash -> !existing.contains(hash)).distinct().toList();
     }
 
     @Transactional
     @Override
-    public PictureDTO upload(long userId, FileUpload file, String filename, String capturedAt, String sha256,
+    public PictureDTO upload(long accountId, FileUpload file, String filename, String capturedAt, String sha256,
                              long declaredSize, String mimeType, String albumId) throws Exception {
         String hash = sha256.toLowerCase();
-        Picture existing = photos.findByHash(userId, hash);
+        Picture existing = photos.findByHash(accountId, hash);
         if (existing != null) return dto(existing);
         if (filename == null || filename.isBlank() || mimeType == null
                 || !mimeType.toLowerCase(java.util.Locale.ROOT).startsWith("image/") || declaredSize < 0)
@@ -51,7 +51,7 @@ public class PictureServiceImpl implements PictureService {
         if (albumId != null && !albumId.isBlank()) {
             try { album = Long.valueOf(albumId); }
             catch (NumberFormatException e) { throw new IllegalArgumentException("invalid album", e); }
-            if (!albums.existsByIdAndOwner(album, userId)) throw new IllegalArgumentException("album is not owned by user");
+            if (!albums.existsByIdAndOwner(album, accountId)) throw new IllegalArgumentException("album is not owned by this account");
         }
         String storageName = UUID.randomUUID().toString();
         Files.createDirectories(directory);
@@ -68,7 +68,7 @@ public class PictureServiceImpl implements PictureService {
             }
             if (!actualHash.equals(hash)) throw new IllegalArgumentException("hash mismatch");
             Instant date = capturedAt == null || capturedAt.isBlank() ? null : Instant.parse(capturedAt);
-            var photo = new Picture(users.findById(userId).orElseThrow(), hash, Path.of(filename).getFileName().toString(),
+            var photo = new Picture(accounts.findById(accountId).orElseThrow(), hash, Path.of(filename).getFileName().toString(),
                 date, declaredSize, mimeType, album, storageName);
             photos.persist(photo);
             return dto(photo);

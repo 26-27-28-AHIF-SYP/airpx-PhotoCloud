@@ -59,8 +59,8 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     @Override
     public Optional<LoginResponse> login(String email, String password) {
-        Optional<Account> user = accountRepository.findByEmail(normalizeEmail(email));
-        if (user.isEmpty() || !passwordHasher.matches(password, user.get().getPasswordHash())) {
+        Optional<Account> account = accountRepository.findByEmail(normalizeEmail(email));
+        if (account.isEmpty() || !passwordHasher.matches(password, account.get().getPasswordHash())) {
             return Optional.empty();
         }
 
@@ -68,31 +68,31 @@ public class AuthServiceImpl implements AuthService {
         byte[] tokenBytes = new byte[32];
         RANDOM.nextBytes(tokenBytes);
         String token = Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
-        activeTokens.put(token, new TokenSession(user.get().getId(), expiresAt));
+        activeTokens.put(token, new TokenSession(account.get().getId(), expiresAt));
         return Optional.of(new LoginResponse(token, "Bearer", expiresAt));
     }
 
     @Override
     public boolean isValidToken(String token) {
-        return authenticatedUserId(token).isPresent();
+        return authenticatedAccountId(token).isPresent();
     }
 
     @Override
-    public Optional<Long> authenticatedUserId(String token) {
+    public Optional<Long> authenticatedAccountId(String token) {
         TokenSession session = activeTokens.get(token);
         if (session == null) return Optional.empty();
         if (session.expiresAt().isBefore(Instant.now())) {
             activeTokens.remove(token);
             return Optional.empty();
         }
-        return Optional.of(session.userId());
+        return Optional.of(session.accountId());
     }
 
     private String normalizeEmail(String email) {
         return email.trim().toLowerCase(java.util.Locale.ROOT);
     }
 
-    private record TokenSession(Long userId, Instant expiresAt) {}
+    private record TokenSession(Long accountId, Instant expiresAt) {}
 
     @Transactional
     @Override

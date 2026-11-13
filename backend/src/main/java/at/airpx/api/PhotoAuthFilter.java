@@ -25,14 +25,14 @@ public class PhotoAuthFilter implements ContainerRequestFilter {
             request.abortWith(Response.status(401).build());
             return;
         }
-        var userId = authService.authenticatedUserId(header.substring(7));
-        if (userId.isEmpty()) {
+        var accountId = authService.authenticatedAccountId(header.substring(7));
+        if (accountId.isEmpty()) {
             request.abortWith(Response.status(401).build());
             return;
         }
         boolean secure = request.getSecurityContext().isSecure();
         request.setSecurityContext(new jakarta.ws.rs.core.SecurityContext() {
-            @Override public Principal getUserPrincipal() { return () -> userId.get().toString(); }
+            @Override public Principal getUserPrincipal() { return () -> accountId.get().toString(); }
             @Override public boolean isUserInRole(String role) { return false; }
             @Override public boolean isSecure() { return secure; }
             @Override public String getAuthenticationScheme() { return "Bearer"; }

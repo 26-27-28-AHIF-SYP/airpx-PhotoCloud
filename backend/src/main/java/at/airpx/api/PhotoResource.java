@@ -21,10 +21,10 @@ public class PhotoResource {
 
     @POST @Path("/missing") @Consumes(MediaType.APPLICATION_JSON)
     public Map<String, Object> missing(@Valid HashesRequest request, @Context SecurityContext security) {
-        return Map.of("missingHashes", photos.missing(userId(security), request.hashes()));
+        return Map.of("missingHashes", photos.missing(accountId(security), request.hashes()));
     }
 
-    @GET public java.util.List<PictureDTO> list(@Context SecurityContext security) { return photos.list(userId(security)); }
+    @GET public java.util.List<PictureDTO> list(@Context SecurityContext security) { return photos.list(accountId(security)); }
 
     @POST @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response upload(@RestForm("file") FileUpload file, @RestForm("filename") String filename,
@@ -33,11 +33,11 @@ public class PhotoResource {
             @RestForm("albumId") String albumId, @Context SecurityContext security) throws Exception {
         if (file == null || sha256 == null || !sha256.matches("(?i)[a-f0-9]{64}")) return Response.status(400).build();
         try {
-            PictureDTO result = photos.upload(userId(security), file, filename, capturedAt, sha256, size, mimeType, albumId);
+            PictureDTO result = photos.upload(accountId(security), file, filename, capturedAt, sha256, size, mimeType, albumId);
             return Response.status(Response.Status.CREATED).entity(result).build();
         } catch (IllegalArgumentException | java.time.DateTimeException e) {
             return Response.status(400).build();
         }
     }
-    private static long userId(SecurityContext security) { return Long.parseLong(security.getUserPrincipal().getName()); }
+    private static long accountId(SecurityContext security) { return Long.parseLong(security.getUserPrincipal().getName()); }
 }

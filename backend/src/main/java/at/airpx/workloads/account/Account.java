@@ -1,10 +1,9 @@
 package at.airpx.workloads.account;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import at.airpx.workloads.account_tag.AccountTag;
+import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Account {
@@ -21,6 +20,9 @@ public class Account {
 
     @Column(nullable = false, length = 512)
     private String passwordHash;
+
+    @OneToMany(mappedBy="account")
+    private List<AccountTag> accountTags = new ArrayList<>();
 
     protected Account() {
     }
@@ -39,5 +41,13 @@ public class Account {
 
     public String getPasswordHash() {
         return passwordHash;
+    }
+
+    public List<AccountTag> getAccountTags() {
+        return accountTags;
+    }
+
+    public void setAccountTags(List<AccountTag> accountTags) {
+        this.accountTags = accountTags;
     }
 }

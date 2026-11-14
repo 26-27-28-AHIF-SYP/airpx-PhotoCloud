@@ -14,7 +14,7 @@ import java.util.Set;
 @Provider
 @Priority(Priorities.AUTHENTICATION)
 public class ApiAuthFilter implements ContainerRequestFilter {
-    private static final Set<String> PROTECTED_PATHS = Set.of("api/pictures");
+    private static final Set<String> PROTECTED_PATHS = Set.of("api/pictures", "api/tags");
 
     private final AuthService authService;
 

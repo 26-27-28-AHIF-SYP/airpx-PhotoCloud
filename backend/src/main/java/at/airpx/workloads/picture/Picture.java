@@ -1,8 +1,11 @@
 package at.airpx.workloads.picture;
 
 import at.airpx.workloads.account.Account;
+import at.airpx.workloads.picture_tag.PictureTag;
 import jakarta.persistence.*;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "picture", uniqueConstraints = @UniqueConstraint(columnNames = {"owner_id", "sha256_hash"}))
@@ -17,6 +20,9 @@ public class Picture {
     @Column(name = "album_id") private Long albumId;
     @Column(name = "storage_name", nullable = false, unique = true) private String storageName;
 
+    @OneToMany(mappedBy="picture")
+    private List<PictureTag> pictureTags = new ArrayList<>();
+
     protected Picture() {}
     public Picture(Account owner, String sha256, String filename, Instant capturedAt, long size, String mimeType, Long albumId, String storageName) {
         this.owner = owner; this.sha256 = sha256; this.filename = filename; this.capturedAt = capturedAt;
@@ -30,4 +36,12 @@ public class Picture {
     public String getMimeType() { return mimeType; }
     public Long getAlbumId() { return albumId; }
     public String getStorageName() { return storageName; }
+
+    public List<PictureTag> getPictureTags() {
+        return pictureTags;
+    }
+
+    public void setPictureTags(List<PictureTag> pictureTags) {
+        this.pictureTags = pictureTags;
+    }
 }

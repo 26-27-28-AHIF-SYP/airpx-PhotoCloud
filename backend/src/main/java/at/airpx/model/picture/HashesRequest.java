@@ -5,4 +5,9 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 
-public record HashesRequest(@NotEmpty @Size(max = 1000) List<@Pattern(regexp = "[a-fA-F0-9]{64}") String> hashes) {}
+public record HashesRequest(@NotEmpty @Size(max = 1000) List<@Pattern(regexp = "[a-fA-F0-9]{64}") String> hashes) {
+
+    public HashesRequest {
+        hashes = hashes == null ? null : List.copyOf(hashes);
+    }
+}

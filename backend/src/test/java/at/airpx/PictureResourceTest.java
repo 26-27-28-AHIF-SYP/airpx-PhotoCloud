@@ -71,6 +71,23 @@ class PictureResourceTest {
     }
 
     @Test
+    void uploadRejectsFilenameWithoutBaseName() {
+        String owner = token("test@example.com", "correct horse battery staple");
+        byte[] content = ("invalid filename " + UUID.randomUUID()).getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        given().auth()
+                .oauth2(owner)
+                .multiPart("file", "photo.jpg", content, "image/jpeg")
+                .multiPart("filename", "/")
+                .multiPart("capturedAt", "2024-01-02T03:04:05Z")
+                .multiPart("sha256", hash(content))
+                .multiPart("size", String.valueOf(content.length))
+                .multiPart("mimeType", "image/jpeg")
+                .post("/api/pictures")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
     void uploadDedupCheckAndListAreScopedToAuthenticatedUser() {
         String owner = token("test@example.com", "correct horse battery staple");
         given().auth()

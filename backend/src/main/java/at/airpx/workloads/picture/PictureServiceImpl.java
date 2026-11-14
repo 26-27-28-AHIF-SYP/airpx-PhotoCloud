@@ -7,6 +7,7 @@ import at.airpx.workloads.album.AlbumRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -99,12 +100,17 @@ public class PictureServiceImpl implements PictureService {
                 while ((count = input.read(buffer)) != -1) digest.update(buffer, 0, count);
                 actualHash = HexFormat.of().formatHex(digest.digest());
             }
-            if (!actualHash.equals(hash)) throw new IllegalArgumentException("hash mismatch");
+            if (!MessageDigest.isEqual(
+                    actualHash.getBytes(StandardCharsets.UTF_8), hash.getBytes(StandardCharsets.UTF_8))) {
+                throw new IllegalArgumentException("hash mismatch");
+            }
+            Path baseName = Path.of(filename).getFileName();
+            if (baseName == null) throw new IllegalArgumentException("invalid filename");
             Instant date = capturedAt == null || capturedAt.isBlank() ? null : Instant.parse(capturedAt);
             var photo = new Picture(
                     accounts.findById(accountId).orElseThrow(),
                     hash,
-                    Path.of(filename).getFileName().toString(),
+                    baseName.toString(),
                     date,
                     declaredSize,
                     mimeType,

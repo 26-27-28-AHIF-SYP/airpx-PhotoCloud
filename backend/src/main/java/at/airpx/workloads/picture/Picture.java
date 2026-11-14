@@ -2,6 +2,8 @@ package at.airpx.workloads.picture;
 
 import at.airpx.workloads.account.Account;
 import at.airpx.workloads.album.Album;
+import at.airpx.workloads.ai_metadata.AiMetadata;
+import at.airpx.workloads.face_recognition.FaceRecognition;
 import at.airpx.workloads.picture_tag.PictureTag;
 import jakarta.persistence.*;
 import java.time.Instant;
@@ -23,6 +25,12 @@ public class Picture {
     @ManyToMany(mappedBy = "pictures")
     private List<Album> albums = new ArrayList<>();
 
+    @ManyToMany(mappedBy = "pictures")
+    private List<AiMetadata> aiMetadata = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "pictures")
+    private List<FaceRecognition> faceRecognitions = new ArrayList<>();
+
     @OneToMany(mappedBy="picture")
     private List<PictureTag> pictureTags = new ArrayList<>();
 
@@ -40,6 +48,10 @@ public class Picture {
     public String getStorageName() { return storageName; }
 
     public List<Album> getAlbums() { return albums; }
+
+    public List<AiMetadata> getAiMetadata() { return aiMetadata; }
+
+    public List<FaceRecognition> getFaceRecognitions() { return faceRecognitions; }
 
     public List<PictureTag> getPictureTags() {
         return pictureTags;

@@ -41,6 +41,12 @@ public class Album {
             inverseJoinColumns = @JoinColumn(name = "picture_id"))
     private List<Picture> pictures = new ArrayList<>();
 
+    @OneToMany(mappedBy = "album")
+    private List<AlbumPermission> permissions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "album")
+    private List<AlbumShareLink> shareLinks = new ArrayList<>();
+
     public Long getId() {
         return id;
     }
@@ -92,6 +98,10 @@ public class Album {
     public List<Picture> getPictures() {
         return pictures;
     }
+
+    public List<AlbumPermission> getPermissions() { return permissions; }
+
+    public List<AlbumShareLink> getShareLinks() { return shareLinks; }
 
     public void addPicture(Picture picture) {
         if (!pictures.contains(picture)) {

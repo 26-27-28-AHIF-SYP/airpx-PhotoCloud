@@ -1,11 +1,14 @@
 package at.airpx.api;
 
+import at.airpx.model.error.ErrorResponse;
 import at.airpx.workloads.account.AuthService;
 import jakarta.annotation.Priority;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.ext.Provider;
 import java.security.Principal;
 import java.util.Set;
@@ -31,18 +34,18 @@ public class ApiAuthFilter implements ContainerRequestFilter {
 
         String header = request.getHeaderString("Authorization");
         if (header == null || !header.startsWith("Bearer ") || header.length() == 7) {
-            request.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+            request.abortWith(unauthorized());
             return;
         }
 
         var accountId = authService.authenticatedAccountId(header.substring(7));
         if (accountId.isEmpty()) {
-            request.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+            request.abortWith(unauthorized());
             return;
         }
 
         boolean secure = request.getSecurityContext().isSecure();
-        request.setSecurityContext(new jakarta.ws.rs.core.SecurityContext() {
+        request.setSecurityContext(new SecurityContext() {
             @Override
             public Principal getUserPrincipal() {
                 return () -> accountId.get().toString();
@@ -63,5 +66,12 @@ public class ApiAuthFilter implements ContainerRequestFilter {
                 return "Bearer";
             }
         });
+    }
+
+    private static Response unauthorized() {
+        return Response.status(Response.Status.UNAUTHORIZED)
+                .entity(new ErrorResponse("authentication required"))
+                .type(MediaType.APPLICATION_JSON)
+                .build();
     }
 }

@@ -44,6 +44,16 @@
     </Match>
 
     <!--
+      PNG, JPEG, and WebP magic-byte signatures are static final byte arrays used
+      only to detect the uploaded image format. They are public file-format
+      markers, not cryptographic key material.
+    -->
+    <Match>
+        <Class name="at.airpx.workloads.picture.PictureServiceImpl"/>
+        <Bug pattern="HARD_CODE_KEY"/>
+    </Match>
+
+    <!--
       The flagged comparison is Integer.toString(ITERATIONS).equals(parts[0]),
       which compares the public iteration count, not a password hash. The hash
       itself is compared with MessageDigest.isEqual (constant time).

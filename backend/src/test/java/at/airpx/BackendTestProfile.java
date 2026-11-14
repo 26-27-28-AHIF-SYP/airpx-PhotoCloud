@@ -10,6 +10,6 @@ public class BackendTestProfile implements QuarkusTestProfile {
                 "auth.bootstrap.username", "Testuser",
                 "auth.bootstrap.email", "test@example.com",
                 "auth.bootstrap.password", "correct horse battery staple",
-                "photo.storage.directory", "target/test-photos");
+                "picture.storage.directory", "target/test-photos");
     }
 }

@@ -149,6 +149,8 @@ Photo storage variables are:
 ```text
 PHOTO_STORAGE_DIRECTORY
 PHOTO_MAX_BODY_SIZE
+PHOTO_MAX_SIZE
+PHOTO_PAGE_SIZE_MAX
 ```
 
 `PHOTO_STORAGE_DIRECTORY` defaults to `./data/photos` in the application and
@@ -184,16 +186,21 @@ POST /api/auth/login
 POST /api/auth/register
 POST /api/pictures/missing
 POST /api/pictures            (multipart upload)
-GET  /api/pictures
+GET  /api/pictures            (paginated metadata list)
+GET  /api/pictures/{pictureId} (image file stream)
 ```
 
 All `/api/pictures` routes require `Authorization: Bearer <token>`. The missing
 hash request is JSON `{ "hashes": ["<sha256>"] }` and returns
-`{ "missingHashes": [...] }`. Upload multipart fields are `file`, `filename`,
-`capturedAt`, `sha256`, `size`, and `mimeType`; `albumId` is optional and must
-identify an album owned by the authenticated account. Uploads accept `image/*`,
-are SHA-256 checked on the server, and are stored under generated filenames.
-The picture list returns only the authenticated account's metadata.
+`{ "missingHashes": [...] }`. Upload multipart fields are `file` plus optional
+`filename`, `capturedAt`, `sha256`, `size`, and `mimeType`; `albumId` is
+optional and must identify an album owned by the authenticated account. Uploads
+accept JPEG, PNG, and WebP, detected from magic bytes, are SHA-256 checked on
+the server, and are stored under generated filenames. The picture list supports
+`page`/`size` (capped by `picture.page-size-max`), is ordered by `capturedAt`
+then id, and returns only metadata the authenticated account may read. The
+single-picture route streams the file and grants access to the owner or accounts
+with `canRead` on an album containing the picture.
 
 The login request is validated with Bean Validation and uses:
 

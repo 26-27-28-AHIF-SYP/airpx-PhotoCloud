@@ -74,6 +74,10 @@ public class Picture {
         return id;
     }
 
+    public Account getOwner() {
+        return owner;
+    }
+
     public String getSha256() {
         return sha256;
     }

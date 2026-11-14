@@ -27,7 +27,9 @@ Do not commit `.env`. The default development API base URL is
 `http://localhost:8080/api`. Photo files are stored under
 `PHOTO_STORAGE_DIRECTORY` (Compose default `/var/lib/photocloud/photos`) and
 persist in the `picture-data` volume. `PHOTO_MAX_BODY_SIZE` controls Quarkus's
-maximum request size (default `100M`).
+maximum request size (default `100M`), `PHOTO_MAX_SIZE` the per-file limit
+(default `25M`), and `PHOTO_PAGE_SIZE_MAX` the list page-size cap (default
+`100`).
 
 ## Endpoints
 
@@ -38,11 +40,16 @@ maximum request size (default `100M`).
 - `POST /api/auth/register` — register a account.
 - `POST /api/pictures/missing` — authenticated batch check. JSON body:
   `{ "hashes": ["<sha256>"] }`; response contains `missingHashes`.
-- `POST /api/pictures` — authenticated multipart upload. Fields: `file`,
-  `filename`, `capturedAt`, `sha256`, `size`, `mimeType`, optional `albumId`.
-  The server accepts image MIME types, verifies size and SHA-256, generates the
-  disk filename, and associates the picture with the authenticated account.
-- `GET /api/pictures` — authenticated metadata list for the current account.
+- `POST /api/pictures` — authenticated multipart upload. Only `file` is
+  required; `filename`, `capturedAt`, `sha256`, `size`, `mimeType`, and
+  `albumId` are optional. JPEG, PNG, and WebP are accepted based on magic
+  bytes; the server verifies SHA-256, generates the disk filename, and returns
+  `201` with a `Location` header.
+- `GET /api/pictures?page=1&size=20` — authenticated metadata list for the
+  current account. Responses carry `X-Total-Count`, `X-Page`, and
+  `X-Page-Size` headers.
+- `GET /api/pictures/{pictureId}` — authenticated image stream for the owner or
+  an account with read access to an album containing the picture.
 
 All picture routes require `Authorization: Bearer <token>`. An optional album ID
 must belong to the authenticated account.

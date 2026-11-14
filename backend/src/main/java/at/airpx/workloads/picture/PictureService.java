@@ -2,10 +2,11 @@ package at.airpx.workloads.picture;
 
 import at.airpx.model.picture.PictureDTO;
 import java.util.List;
+import java.util.Optional;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 
 public interface PictureService {
-    List<PictureDTO> list(long accountId);
+    PicturePage list(long accountId, int page, int size);
 
     List<String> missing(long accountId, List<String> hashes);
 
@@ -15,8 +16,9 @@ public interface PictureService {
             String filename,
             String capturedAt,
             String sha256,
-            long declaredSize,
+            Long declaredSize,
             String mimeType,
-            String albumId)
-            throws Exception;
+            String albumId);
+
+    Optional<PictureFile> load(long accountId, long pictureId);
 }

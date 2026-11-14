@@ -13,6 +13,12 @@ then run from `backend/`:
 docker compose --env-file .env up --build
 ```
 
+On first startup, Compose initializes PostgreSQL from `POSTGRES_DB`,
+`POSTGRES_USER`, and `POSTGRES_PASSWORD`. Flyway applies the schema migrations
+from `src/main/resources/db/migration/`; Hibernate validates the resulting
+schema. Development mode instead uses an ephemeral PostgreSQL Dev Service and
+recreates its schema on startup.
+
 Re-run the Maven package command after backend source changes before rebuilding
 the image. The Dockerfile copies the already packaged `target/quarkus-app/`;
 `./mvnw test` alone does not refresh that runnable image input.

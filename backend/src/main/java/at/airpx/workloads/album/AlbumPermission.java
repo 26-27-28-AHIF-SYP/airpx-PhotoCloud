@@ -2,6 +2,7 @@ package at.airpx.workloads.album;
 
 import at.airpx.workloads.account.Account;
 import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -25,9 +26,16 @@ public class AlbumPermission {
     @JoinColumn(name = "album_id", nullable = false)
     private Album album;
 
+    @Column(nullable = false)
     private boolean canRead;
+
+    @Column(nullable = false)
     private boolean canAdd;
+
+    @Column(nullable = false)
     private boolean canDelete;
+
+    @Column(nullable = false)
     private boolean canRename;
 
     protected AlbumPermission() { }

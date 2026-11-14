@@ -170,9 +170,8 @@ Be careful with schema-management settings:
   not production.
 - Production uses `validate`; entity changes require a planned database
   migration before deployment.
-- Docker Compose currently passes its own schema-management environment
-  setting. Verify the resulting profile and database behavior before changing
-  deployment configuration.
+- Docker Compose uses the production profile: Flyway applies migrations before
+  Hibernate validates the schema. Do not switch Compose to Hibernate `update`.
 
 ## Current HTTP endpoints
 

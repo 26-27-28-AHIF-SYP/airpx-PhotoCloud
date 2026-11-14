@@ -1,6 +1,6 @@
 package at.airpx.workloads.picture;
 
-import at.airpx.model.photo.PictureDTO;
+import at.airpx.model.picture.PictureDTO;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 import java.util.List;
 

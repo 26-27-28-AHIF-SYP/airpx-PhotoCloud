@@ -30,13 +30,13 @@ maximum request size (default `100M`).
 - `POST /api/auth/login` — authenticate with email and password; returns a
   bearer token.
 - `POST /api/auth/register` — register a account.
-- `POST /api/photos/missing` — authenticated batch check. JSON body:
+- `POST /api/pictures/missing` — authenticated batch check. JSON body:
   `{ "hashes": ["<sha256>"] }`; response contains `missingHashes`.
-- `POST /api/photos` — authenticated multipart upload. Fields: `file`,
+- `POST /api/pictures` — authenticated multipart upload. Fields: `file`,
   `filename`, `capturedAt`, `sha256`, `size`, `mimeType`, optional `albumId`.
   The server accepts image MIME types, verifies size and SHA-256, generates the
   disk filename, and associates the picture with the authenticated account.
-- `GET /api/photos` — authenticated metadata list for the current account.
+- `GET /api/pictures` — authenticated metadata list for the current account.
 
 All picture routes require `Authorization: Bearer <token>`. An optional album ID
 must belong to the authenticated account.

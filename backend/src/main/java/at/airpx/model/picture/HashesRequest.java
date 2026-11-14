@@ -1,4 +1,4 @@
-package at.airpx.model.photo;
+package at.airpx.model.picture;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;

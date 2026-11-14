@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 @Entity
-@Table(name = "photo", uniqueConstraints = @UniqueConstraint(columnNames = {"owner_id", "sha256_hash"}))
+@Table(name = "picture", uniqueConstraints = @UniqueConstraint(columnNames = {"owner_id", "sha256_hash"}))
 public class Picture {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
     @ManyToOne(optional = false) @JoinColumn(name = "owner_id", nullable = false) private Account owner;

@@ -8,7 +8,7 @@ Content-Type: application/json
 
 ###
 
-GET http://localhost:8080/api/photos
+GET http://localhost:8080/api/pictures
 Content-Type: application/json
 Authorization: Bearer <TOKEN>
 
@@ -28,36 +28,36 @@ Content-Type: application/json
 // Vor dem Senden anpassen:
 // sha256sum picture.jpg
 // stat -c%s picture.jpg
-@photoHash=HIER_DEN_SHA256_HASH_EINTRAGEN
-@photoSize=HIER_DIE_DATEIGROESSE_EINTRAGEN
+@pictureHash=HIER_DEN_SHA256_HASH_EINTRAGEN
+@pictureSize=HIER_DIE_DATEIGROESSE_EINTRAGEN
 
-POST http://localhost:8080/api/photos
+POST http://localhost:8080/api/pictures
 Authorization: Bearer 3_b-LsGiSJ0PHfq8ihJrBTFVCV2S7Jdn6Dt2fwu_VNc
-Content-Type: multipart/form-data; boundary=PhotoUploadBoundary
+Content-Type: multipart/form-data; boundary=PictureUploadBoundary
 
---PhotoUploadBoundary
+--PictureUploadBoundary
 Content-Disposition: form-data; name="file"; filename="picture.jpg"
 Content-Type: image/jpeg
 
 < ./picture.jpg
---PhotoUploadBoundary
+--PictureUploadBoundary
 Content-Disposition: form-data; name="filename"
 
 picture.jpg
---PhotoUploadBoundary
+--PictureUploadBoundary
 Content-Disposition: form-data; name="capturedAt"
 
 2026-11-13T10:00:00Z
---PhotoUploadBoundary
+--PictureUploadBoundary
 Content-Disposition: form-data; name="sha256"
 
-{{photoHash}}
---PhotoUploadBoundary
+{{pictureHash}}
+--PictureUploadBoundary
 Content-Disposition: form-data; name="size"
 
-{{photoSize}}
---PhotoUploadBoundary
+{{pictureSize}}
+--PictureUploadBoundary
 Content-Disposition: form-data; name="mimeType"
 
 image/jpeg
---PhotoUploadBoundary--
+--PictureUploadBoundary--

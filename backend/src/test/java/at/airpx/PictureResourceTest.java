@@ -51,16 +51,16 @@ class PictureResourceTest {
     }
 
     @Test
-    void photoEndpointsRequireValidBearerToken() {
-        given().get("/api/photos").then().statusCode(401);
-        given().header("Authorization", "Bearer invalid").get("/api/photos").then().statusCode(401);
+    void pictureEndpointsRequireValidBearerToken() {
+        given().get("/api/pictures").then().statusCode(401);
+        given().header("Authorization", "Bearer invalid").get("/api/pictures").then().statusCode(401);
     }
 
     @Test
     void uploadDedupCheckAndListAreScopedToAuthenticatedUser() {
         String owner = token("test@example.com", "correct horse battery staple");
         given().auth().oauth2(owner).contentType("application/json")
-                .body("{\"hashes\":[\"" + HASH + "\"]}").post("/api/photos/missing")
+                .body("{\"hashes\":[\"" + HASH + "\"]}").post("/api/pictures/missing")
                 .then().statusCode(200).body("missingHashes", hasItem(HASH));
 
         Response uploaded = given().auth().oauth2(owner)
@@ -70,12 +70,12 @@ class PictureResourceTest {
                 .multiPart("sha256", HASH)
                 .multiPart("size", String.valueOf(CONTENT.length))
                 .multiPart("mimeType", "image/jpeg")
-                .post("/api/photos");
+                .post("/api/pictures");
         uploaded.then().statusCode(201).body("sha256", equalTo(HASH)).body("filename", equalTo("photo.jpg"));
         given().auth().oauth2(owner).contentType("application/json")
-                .body("{\"hashes\":[\"" + HASH + "\"]}").post("/api/photos/missing")
+                .body("{\"hashes\":[\"" + HASH + "\"]}").post("/api/pictures/missing")
                 .then().statusCode(200).body("missingHashes", empty());
-        given().auth().oauth2(owner).get("/api/photos").then().statusCode(200)
+        given().auth().oauth2(owner).get("/api/pictures").then().statusCode(200)
                 .body("size()", greaterThanOrEqualTo(1)).body("find { it.sha256 == '%s' }.id".formatted(HASH), notNullValue());
 
         String username = "photo" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
@@ -84,9 +84,9 @@ class PictureResourceTest {
                 {"username":"%s","email":"%s","password":"securePassword123"}
                 """.formatted(username, email)).post("/api/auth/register").then().statusCode(201);
         String otherUser = token(email, "securePassword123");
-        given().auth().oauth2(otherUser).get("/api/photos").then().statusCode(200).body("size()", is(0));
+        given().auth().oauth2(otherUser).get("/api/pictures").then().statusCode(200).body("size()", is(0));
         given().auth().oauth2(otherUser).contentType("application/json")
-                .body("{\"hashes\":[\"" + HASH + "\"]}").post("/api/photos/missing")
+                .body("{\"hashes\":[\"" + HASH + "\"]}").post("/api/pictures/missing")
                 .then().statusCode(200).body("missingHashes", hasItem(HASH));
     }
 
@@ -99,7 +99,7 @@ class PictureResourceTest {
                 .multiPart("file", "ignored.jpg", bytes, "image/jpeg")
                 .multiPart("filename", "../../outside.jpg")
                 .multiPart("sha256", hash).multiPart("size", String.valueOf(bytes.length))
-                .multiPart("mimeType", "image/jpeg").post("/api/photos")
+                .multiPart("mimeType", "image/jpeg").post("/api/pictures")
                 .then().statusCode(201).body("filename", equalTo("outside.jpg"));
 
         var saved = pictureRepository.findAll(accountRepository.findByEmail("test@example.com").orElseThrow().getId()).stream()
@@ -111,13 +111,13 @@ class PictureResourceTest {
         given().auth().oauth2(token).multiPart("file", "wrong.jpg", wrongHashBytes, "image/jpeg")
                 .multiPart("filename", "wrong.jpg").multiPart("sha256", "0".repeat(64))
                 .multiPart("size", String.valueOf(wrongHashBytes.length)).multiPart("mimeType", "image/jpeg")
-                .post("/api/photos").then().statusCode(400);
+                .post("/api/pictures").then().statusCode(400);
 
         byte[] wrongMimeBytes = UUID.randomUUID().toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
         given().auth().oauth2(token).multiPart("file", "wrong.bin", wrongMimeBytes, "application/octet-stream")
                 .multiPart("filename", "wrong.bin").multiPart("sha256", hash(wrongMimeBytes))
                 .multiPart("size", String.valueOf(wrongMimeBytes.length)).multiPart("mimeType", "application/octet-stream")
-                .post("/api/photos").then().statusCode(400);
+                .post("/api/pictures").then().statusCode(400);
     }
 
     @Test
@@ -144,7 +144,7 @@ class PictureResourceTest {
         return given().auth().oauth2(token).multiPart("file", "photo.jpg", bytes, "image/jpeg")
                 .multiPart("filename", "photo.jpg").multiPart("sha256", hash(bytes))
                 .multiPart("size", String.valueOf(bytes.length)).multiPart("mimeType", "image/jpeg")
-                .multiPart("albumId", albumId).post("/api/photos");
+                .multiPart("albumId", albumId).post("/api/pictures");
     }
 
     private Album createAlbum(Account owner, String name) {

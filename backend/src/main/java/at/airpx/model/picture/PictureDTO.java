@@ -1,4 +1,4 @@
-package at.airpx.model.photo;
+package at.airpx.model.picture;
 
 import java.time.Instant;
 

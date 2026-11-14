@@ -183,12 +183,12 @@ GET  /api
 GET  /api/albums
 POST /api/auth/login
 POST /api/auth/register
-POST /api/photos/missing
-POST /api/photos              (multipart upload)
-GET  /api/photos
+POST /api/pictures/missing
+POST /api/pictures            (multipart upload)
+GET  /api/pictures
 ```
 
-All `/api/photos` routes require `Authorization: Bearer <token>`. The missing
+All `/api/pictures` routes require `Authorization: Bearer <token>`. The missing
 hash request is JSON `{ "hashes": ["<sha256>"] }` and returns
 `{ "missingHashes": [...] }`. Upload multipart fields are `file`, `filename`,
 `capturedAt`, `sha256`, `size`, and `mimeType`; `albumId` is optional and must
@@ -363,7 +363,7 @@ status code, or authentication behavior, update the corresponding OpenAPI
 entry if the documentation is in scope.
 
 Keep the documented contract honest. The picture endpoints above are implemented
-in `api/PhotoResource.java`; check its paths and tests when changing them.
+in `api/PictureResource.java`; check its paths and tests when changing them.
 
 ## Security rules
 

@@ -1,7 +1,7 @@
 package at.airpx.api;
 
-import at.airpx.model.photo.HashesRequest;
-import at.airpx.model.photo.PictureDTO;
+import at.airpx.model.picture.HashesRequest;
+import at.airpx.model.picture.PictureDTO;
 import at.airpx.workloads.picture.PictureService;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -13,18 +13,18 @@ import org.jboss.resteasy.reactive.RestForm;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 import java.util.Map;
 
-@Path("/api/photos")
+@Path("/api/pictures")
 @Produces(MediaType.APPLICATION_JSON)
-public class PhotoResource {
-    private final PictureService photos;
-    public PhotoResource(PictureService photos) { this.photos = photos; }
+public class PictureResource {
+    private final PictureService pictures;
+    public PictureResource(PictureService pictures) { this.pictures = pictures; }
 
     @POST @Path("/missing") @Consumes(MediaType.APPLICATION_JSON)
     public Map<String, Object> missing(@Valid HashesRequest request, @Context SecurityContext security) {
-        return Map.of("missingHashes", photos.missing(accountId(security), request.hashes()));
+        return Map.of("missingHashes", pictures.missing(accountId(security), request.hashes()));
     }
 
-    @GET public java.util.List<PictureDTO> list(@Context SecurityContext security) { return photos.list(accountId(security)); }
+    @GET public java.util.List<PictureDTO> list(@Context SecurityContext security) { return pictures.list(accountId(security)); }
 
     @POST @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response upload(@RestForm("file") FileUpload file, @RestForm("filename") String filename,
@@ -33,7 +33,7 @@ public class PhotoResource {
             @RestForm("albumId") String albumId, @Context SecurityContext security) throws Exception {
         if (file == null || sha256 == null || !sha256.matches("(?i)[a-f0-9]{64}")) return Response.status(400).build();
         try {
-            PictureDTO result = photos.upload(accountId(security), file, filename, capturedAt, sha256, size, mimeType, albumId);
+            PictureDTO result = pictures.upload(accountId(security), file, filename, capturedAt, sha256, size, mimeType, albumId);
             return Response.status(Response.Status.CREATED).entity(result).build();
         } catch (IllegalArgumentException | java.time.DateTimeException e) {
             return Response.status(400).build();

@@ -1,6 +1,6 @@
 package at.airpx.workloads.picture;
 
-import at.airpx.model.photo.PictureDTO;
+import at.airpx.model.picture.PictureDTO;
 import at.airpx.workloads.album.AlbumRepository;
 import at.airpx.workloads.account.AccountRepository;
 import jakarta.enterprise.context.ApplicationScoped;

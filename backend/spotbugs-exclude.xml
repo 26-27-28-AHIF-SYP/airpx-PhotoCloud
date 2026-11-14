@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!--
+      JPA entities are mutable managed objects by design. Hibernate relies on
+      callers receiving the managed collections and references for dirty
+      checking; returning defensive copies would break persistence behavior.
+    -->
+    <Match>
+        <Annotation name="jakarta.persistence.Entity"/>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!--
+      CDI injects these repository implementations with a container-managed
+      EntityManager proxy. Storing the injected reference is required; it is
+      not caller-supplied mutable state.
+    -->
+    <Match>
+        <Class name="at.airpx.workloads.account.AccountRepositoryImpl"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="at.airpx.workloads.album.AlbumRepositoryImpl"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="at.airpx.workloads.picture.PictureRepositoryImpl"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="at.airpx.workloads.tag.TagRepositoryImpl"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!--
+      Contact's constructor validates its persisted-entity invariants and throws
+      IllegalArgumentException for invalid input. The class has no finalizer and
+      is instantiated by Hibernate through its no-arg constructor, so the
+      finalizer-attack concern behind CT_CONSTRUCTOR_THROW does not apply.
+    -->
+    <Match>
+        <Class name="at.airpx.workloads.contact.Contact"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+
+    <!--
+      The flagged comparison is Integer.toString(ITERATIONS).equals(parts[0]),
+      which compares the public iteration count, not a password hash. The hash
+      itself is compared with MessageDigest.isEqual (constant time).
+    -->
+    <Match>
+        <Class name="at.airpx.workloads.account.PasswordHasherImpl"/>
+        <Bug pattern="UNSAFE_HASH_EQUALS"/>
+    </Match>
+</FindBugsFilter>

@@ -1,6 +1,7 @@
 package at.airpx.workloads.picture;
 
 import at.airpx.model.picture.PictureDTO;
+import at.airpx.workloads.album.Album;
 import at.airpx.workloads.album.AlbumRepository;
 import at.airpx.workloads.account.AccountRepository;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -42,16 +43,21 @@ public class PictureServiceImpl implements PictureService {
     public PictureDTO upload(long accountId, FileUpload file, String filename, String capturedAt, String sha256,
                              long declaredSize, String mimeType, String albumId) throws Exception {
         String hash = sha256.toLowerCase();
-        Picture existing = photos.findByHash(accountId, hash);
-        if (existing != null) return dto(existing);
         if (filename == null || filename.isBlank() || mimeType == null
                 || !mimeType.toLowerCase(java.util.Locale.ROOT).startsWith("image/") || declaredSize < 0)
             throw new IllegalArgumentException("invalid metadata");
-        Long album = null;
+        Album targetAlbum = null;
         if (albumId != null && !albumId.isBlank()) {
-            try { album = Long.valueOf(albumId); }
+            long parsedAlbumId;
+            try { parsedAlbumId = Long.parseLong(albumId); }
             catch (NumberFormatException e) { throw new IllegalArgumentException("invalid album", e); }
-            if (!albums.existsByIdAndOwner(album, accountId)) throw new IllegalArgumentException("album is not owned by this account");
+            targetAlbum = albums.findByIdAndOwner(parsedAlbumId, accountId)
+                    .orElseThrow(() -> new IllegalArgumentException("album is not owned by this account"));
+        }
+        Picture existing = photos.findByHash(accountId, hash);
+        if (existing != null) {
+            if (targetAlbum != null) targetAlbum.addPicture(existing);
+            return dto(existing);
         }
         String storageName = UUID.randomUUID().toString();
         Files.createDirectories(directory);
@@ -69,8 +75,9 @@ public class PictureServiceImpl implements PictureService {
             if (!actualHash.equals(hash)) throw new IllegalArgumentException("hash mismatch");
             Instant date = capturedAt == null || capturedAt.isBlank() ? null : Instant.parse(capturedAt);
             var photo = new Picture(accounts.findById(accountId).orElseThrow(), hash, Path.of(filename).getFileName().toString(),
-                date, declaredSize, mimeType, album, storageName);
+                date, declaredSize, mimeType, storageName);
             photos.persist(photo);
+            if (targetAlbum != null) targetAlbum.addPicture(photo);
             return dto(photo);
         } catch (Exception e) {
             Files.deleteIfExists(destination);

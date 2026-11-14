@@ -4,6 +4,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 
 @ApplicationScoped
 public class AlbumRepositoryImpl implements AlbumRepository {
@@ -19,12 +20,13 @@ public class AlbumRepositoryImpl implements AlbumRepository {
     }
 
     @Override
-    public boolean existsByIdAndOwner(long albumId, long ownerId) {
+    public Optional<Album> findByIdAndOwner(long albumId, long ownerId) {
         return entityManager.createQuery(
-                        "select count(a) from Album a where a.id = :albumId and a.owner.id = :ownerId", Long.class)
+                        "select a from Album a where a.id = :albumId and a.owner.id = :ownerId", Album.class)
                 .setParameter("albumId", albumId)
                 .setParameter("ownerId", ownerId)
-                .getSingleResult() > 0;
+                .getResultStream()
+                .findFirst();
     }
 
     @Override

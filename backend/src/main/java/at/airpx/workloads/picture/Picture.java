@@ -1,6 +1,7 @@
 package at.airpx.workloads.picture;
 
 import at.airpx.workloads.account.Account;
+import at.airpx.workloads.album.Album;
 import at.airpx.workloads.picture_tag.PictureTag;
 import jakarta.persistence.*;
 import java.time.Instant;
@@ -17,16 +18,18 @@ public class Picture {
     @Column(name = "captured_at") private Instant capturedAt;
     @Column(nullable = false) private long size;
     @Column(name = "mime_type", nullable = false, length = 255) private String mimeType;
-    @Column(name = "album_id") private Long albumId;
     @Column(name = "storage_name", nullable = false, unique = true) private String storageName;
+
+    @ManyToMany(mappedBy = "pictures")
+    private List<Album> albums = new ArrayList<>();
 
     @OneToMany(mappedBy="picture")
     private List<PictureTag> pictureTags = new ArrayList<>();
 
     protected Picture() {}
-    public Picture(Account owner, String sha256, String filename, Instant capturedAt, long size, String mimeType, Long albumId, String storageName) {
+    public Picture(Account owner, String sha256, String filename, Instant capturedAt, long size, String mimeType, String storageName) {
         this.owner = owner; this.sha256 = sha256; this.filename = filename; this.capturedAt = capturedAt;
-        this.size = size; this.mimeType = mimeType; this.albumId = albumId; this.storageName = storageName;
+        this.size = size; this.mimeType = mimeType; this.storageName = storageName;
     }
     public Long getId() { return id; }
     public String getSha256() { return sha256; }
@@ -34,8 +37,9 @@ public class Picture {
     public Instant getCapturedAt() { return capturedAt; }
     public long getSize() { return size; }
     public String getMimeType() { return mimeType; }
-    public Long getAlbumId() { return albumId; }
     public String getStorageName() { return storageName; }
+
+    public List<Album> getAlbums() { return albums; }
 
     public List<PictureTag> getPictureTags() {
         return pictureTags;

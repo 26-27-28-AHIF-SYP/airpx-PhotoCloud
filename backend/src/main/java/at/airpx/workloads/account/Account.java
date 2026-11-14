@@ -1,6 +1,7 @@
 package at.airpx.workloads.account;
 
 import at.airpx.workloads.account_tag.AccountTag;
+import at.airpx.workloads.contact.Contact;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,12 @@ public class Account {
 
     @OneToMany(mappedBy="account")
     private List<AccountTag> accountTags = new ArrayList<>();
+
+    @OneToMany(mappedBy = "account")
+    private List<Contact> outgoingContacts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "contactAccount")
+    private List<Contact> incomingContacts = new ArrayList<>();
 
     protected Account() {
     }
@@ -49,5 +56,13 @@ public class Account {
 
     public void setAccountTags(List<AccountTag> accountTags) {
         this.accountTags = accountTags;
+    }
+
+    public List<Contact> getOutgoingContacts() {
+        return outgoingContacts;
+    }
+
+    public List<Contact> getIncomingContacts() {
+        return incomingContacts;
     }
 }

@@ -5,6 +5,8 @@ import java.util.Optional;
 
 public interface AlbumRepository {
     List<Album> findAllAlbums();
+
     Optional<Album> findByIdAndOwner(long albumId, long ownerId);
+
     void persist(Album album);
 }

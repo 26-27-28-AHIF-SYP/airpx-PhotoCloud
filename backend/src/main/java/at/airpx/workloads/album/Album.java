@@ -3,7 +3,6 @@ package at.airpx.workloads.album;
 import at.airpx.workloads.account.Account;
 import at.airpx.workloads.picture.Picture;
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +35,8 @@ public class Album {
     private String qrcodeToken;
 
     @ManyToMany
-    @JoinTable(name = "album_pictures",
+    @JoinTable(
+            name = "album_pictures",
             joinColumns = @JoinColumn(name = "album_id"),
             inverseJoinColumns = @JoinColumn(name = "picture_id"))
     private List<Picture> pictures = new ArrayList<>();
@@ -67,9 +67,13 @@ public class Album {
         this.createdAt = createdAt;
     }
 
-    public Account getOwner() { return owner; }
+    public Account getOwner() {
+        return owner;
+    }
 
-    public void setOwner(Account owner) { this.owner = owner; }
+    public void setOwner(Account owner) {
+        this.owner = owner;
+    }
 
     public String getDescription() {
         return description;
@@ -99,9 +103,13 @@ public class Album {
         return pictures;
     }
 
-    public List<AlbumPermission> getPermissions() { return permissions; }
+    public List<AlbumPermission> getPermissions() {
+        return permissions;
+    }
 
-    public List<AlbumShareLink> getShareLinks() { return shareLinks; }
+    public List<AlbumShareLink> getShareLinks() {
+        return shareLinks;
+    }
 
     public void addPicture(Picture picture) {
         if (!pictures.contains(picture)) {

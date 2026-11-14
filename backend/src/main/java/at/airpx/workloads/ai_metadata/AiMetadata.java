@@ -32,12 +32,13 @@ public class AiMetadata {
     private LocalDateTime processedAt;
 
     @ManyToMany
-    @JoinTable(name = "picture_metadata",
+    @JoinTable(
+            name = "picture_metadata",
             joinColumns = @JoinColumn(name = "ai_metadata_id"),
             inverseJoinColumns = @JoinColumn(name = "picture_id"))
     private List<Picture> pictures = new ArrayList<>();
 
-    protected AiMetadata() { }
+    protected AiMetadata() {}
 
     public AiMetadata(String detectedText, String category) {
         this.detectedText = detectedText;
@@ -49,9 +50,23 @@ public class AiMetadata {
         if (processedAt == null) processedAt = LocalDateTime.now();
     }
 
-    public Long getId() { return id; }
-    public String getDetectedText() { return detectedText; }
-    public String getCategory() { return category; }
-    public LocalDateTime getProcessedAt() { return processedAt; }
-    public List<Picture> getPictures() { return pictures; }
+    public Long getId() {
+        return id;
+    }
+
+    public String getDetectedText() {
+        return detectedText;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public LocalDateTime getProcessedAt() {
+        return processedAt;
+    }
+
+    public List<Picture> getPictures() {
+        return pictures;
+    }
 }

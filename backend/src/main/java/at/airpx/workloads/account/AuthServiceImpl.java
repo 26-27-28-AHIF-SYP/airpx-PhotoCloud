@@ -6,14 +6,13 @@ import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.transaction.Transactional;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
 public class AuthServiceImpl implements AuthService {
@@ -44,14 +43,18 @@ public class AuthServiceImpl implements AuthService {
 
     @Transactional
     void bootstrap(@Observes StartupEvent ignored) {
-        if (bootstrapUsername.isEmpty() || bootstrapEmail.isEmpty() || bootstrapPassword.isEmpty()
-                || bootstrapEmail.get().isBlank() || bootstrapPassword.get().isEmpty()) {
+        if (bootstrapUsername.isEmpty()
+                || bootstrapEmail.isEmpty()
+                || bootstrapPassword.isEmpty()
+                || bootstrapEmail.get().isBlank()
+                || bootstrapPassword.get().isEmpty()) {
             return;
         }
 
         String normalizedEmail = normalizeEmail(bootstrapEmail.get());
         if (accountRepository.findByEmail(normalizedEmail).isEmpty()) {
-            Account bootstrapAccount = new Account(bootstrapUsername.get(), normalizedEmail, passwordHasher.hash(bootstrapPassword.get()));
+            Account bootstrapAccount =
+                    new Account(bootstrapUsername.get(), normalizedEmail, passwordHasher.hash(bootstrapPassword.get()));
             accountRepository.persist(bootstrapAccount);
         }
     }
@@ -100,8 +103,8 @@ public class AuthServiceImpl implements AuthService {
         String normalizedEmail = normalizeEmail(email);
         String normalizedUsername = username.trim();
 
-        if (accountRepository.findByEmail(normalizedEmail).isPresent() ||
-            accountRepository.findByUsername(normalizedUsername).isPresent()) {
+        if (accountRepository.findByEmail(normalizedEmail).isPresent()
+                || accountRepository.findByUsername(normalizedUsername).isPresent()) {
             return Optional.empty();
         }
 

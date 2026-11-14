@@ -27,20 +27,32 @@ public class FaceRecognition {
     private String boundingBox;
 
     @ManyToMany
-    @JoinTable(name = "picture_face_recognitions",
+    @JoinTable(
+            name = "picture_face_recognitions",
             joinColumns = @JoinColumn(name = "face_recognition_id"),
             inverseJoinColumns = @JoinColumn(name = "picture_id"))
     private List<Picture> pictures = new ArrayList<>();
 
-    protected FaceRecognition() { }
+    protected FaceRecognition() {}
 
     public FaceRecognition(String personLabel, String boundingBox) {
         this.personLabel = personLabel;
         this.boundingBox = boundingBox;
     }
 
-    public Long getId() { return id; }
-    public String getPersonLabel() { return personLabel; }
-    public String getBoundingBox() { return boundingBox; }
-    public List<Picture> getPictures() { return pictures; }
+    public Long getId() {
+        return id;
+    }
+
+    public String getPersonLabel() {
+        return personLabel;
+    }
+
+    public String getBoundingBox() {
+        return boundingBox;
+    }
+
+    public List<Picture> getPictures() {
+        return pictures;
+    }
 }

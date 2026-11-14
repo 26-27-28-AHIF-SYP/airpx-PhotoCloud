@@ -3,7 +3,6 @@ package at.airpx.workloads.tag;
 import at.airpx.workloads.account_tag.AccountTag;
 import at.airpx.workloads.picture_tag.PictureTag;
 import jakarta.persistence.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,14 +18,13 @@ public class Tag {
     @Column(length = 400, nullable = false)
     private String description;
 
-    @OneToMany(mappedBy="tag")
+    @OneToMany(mappedBy = "tag")
     private List<PictureTag> pictureTags = new ArrayList<>();
 
-    @OneToMany(mappedBy="tag")
+    @OneToMany(mappedBy = "tag")
     private List<AccountTag> accountTags = new ArrayList<>();
 
-    public Tag() {
-    }
+    public Tag() {}
 
     public Tag(String tagName, String description) {
         this.tagName = tagName;

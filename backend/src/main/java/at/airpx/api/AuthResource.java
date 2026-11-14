@@ -4,12 +4,12 @@ import at.airpx.model.auth.LoginRequest;
 import at.airpx.model.auth.RegisterRequest;
 import at.airpx.model.error.ErrorResponse;
 import at.airpx.workloads.account.AuthService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -27,7 +27,8 @@ public class AuthResource {
     @POST
     @Path("/login")
     public Response login(@Valid @NotNull LoginRequest request) {
-        return authService.login(request.email(), request.password())
+        return authService
+                .login(request.email(), request.password())
                 .map(response -> Response.ok(response).build())
                 .orElseGet(() -> Response.status(Response.Status.UNAUTHORIZED)
                         .entity(new ErrorResponse("invalid email or password"))
@@ -37,16 +38,13 @@ public class AuthResource {
     @POST
     @Path("/register")
     public Response register(@Valid @NotNull RegisterRequest request) {
-        return authService.register(
-                request.username(),
-                request.email(),
-                request.password()
-            )
-            .map(response -> Response.status(Response.Status.CREATED)
-                .entity(response)
-                .build())
-            .orElseGet(() -> Response.status(Response.Status.CONFLICT)
-                .entity(new ErrorResponse("username or email already exists"))
-                .build());
+        return authService
+                .register(request.username(), request.email(), request.password())
+                .map(response -> Response.status(Response.Status.CREATED)
+                        .entity(response)
+                        .build())
+                .orElseGet(() -> Response.status(Response.Status.CONFLICT)
+                        .entity(new ErrorResponse("username or email already exists"))
+                        .build());
     }
 }

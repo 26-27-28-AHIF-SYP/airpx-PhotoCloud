@@ -6,10 +6,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class AlbumMapper {
     public AlbumDTO toDTO(Album album) {
-        return new AlbumDTO(
-            album.getId(),
-            album.getName(),
-            album.getCreatedAt()
-        );
+        return new AlbumDTO(album.getId(), album.getName(), album.getCreatedAt());
     }
 }

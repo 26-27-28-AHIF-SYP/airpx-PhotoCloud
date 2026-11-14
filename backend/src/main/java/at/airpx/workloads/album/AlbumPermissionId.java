@@ -13,15 +13,20 @@ public class AlbumPermissionId implements Serializable {
     @Column(name = "album_id")
     private Long albumId;
 
-    protected AlbumPermissionId() { }
+    protected AlbumPermissionId() {}
 
     public AlbumPermissionId(Long accountId, Long albumId) {
         this.accountId = accountId;
         this.albumId = albumId;
     }
 
-    public Long getAccountId() { return accountId; }
-    public Long getAlbumId() { return albumId; }
+    public Long getAccountId() {
+        return accountId;
+    }
+
+    public Long getAlbumId() {
+        return albumId;
+    }
 
     @Override
     public boolean equals(Object other) {
@@ -31,5 +36,7 @@ public class AlbumPermissionId implements Serializable {
     }
 
     @Override
-    public int hashCode() { return Objects.hash(accountId, albumId); }
+    public int hashCode() {
+        return Objects.hash(accountId, albumId);
+    }
 }

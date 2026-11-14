@@ -1,9 +1,9 @@
 package at.airpx.workloads.account;
 
 import at.airpx.workloads.account_tag.AccountTag;
-import at.airpx.workloads.contact.Contact;
 import at.airpx.workloads.album.Album;
 import at.airpx.workloads.album.AlbumPermission;
+import at.airpx.workloads.contact.Contact;
 import at.airpx.workloads.picture.Picture;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -46,7 +46,7 @@ public class Account {
     @JoinColumn(name = "profile_picture_id")
     private Picture profilePicture;
 
-    @OneToMany(mappedBy="account")
+    @OneToMany(mappedBy = "account")
     private List<AccountTag> accountTags = new ArrayList<>();
 
     @OneToMany(mappedBy = "account")
@@ -61,8 +61,7 @@ public class Account {
     @OneToMany(mappedBy = "account")
     private List<AlbumPermission> albumPermissions = new ArrayList<>();
 
-    protected Account() {
-    }
+    protected Account() {}
 
     public Account(String username, String email, String passwordHash) {
         this.username = username;
@@ -76,35 +75,61 @@ public class Account {
         if (createdAt == null) createdAt = LocalDateTime.now();
     }
 
-    public String getUsername() { return username; }
+    public String getUsername() {
+        return username;
+    }
 
-    public String getName() { return name; }
+    public String getName() {
+        return name;
+    }
 
-    public void setName(String name) { this.name = name; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getEmail() {
         return email;
     }
 
-    public Long getId() { return id; }
+    public Long getId() {
+        return id;
+    }
 
-    public boolean isTwoFactorEnabled() { return twoFactorEnabled; }
+    public boolean isTwoFactorEnabled() {
+        return twoFactorEnabled;
+    }
 
-    public void setTwoFactorEnabled(boolean twoFactorEnabled) { this.twoFactorEnabled = twoFactorEnabled; }
+    public void setTwoFactorEnabled(boolean twoFactorEnabled) {
+        this.twoFactorEnabled = twoFactorEnabled;
+    }
 
-    public String getSsoId() { return ssoId; }
+    public String getSsoId() {
+        return ssoId;
+    }
 
-    public void setSsoId(String ssoId) { this.ssoId = ssoId; }
+    public void setSsoId(String ssoId) {
+        this.ssoId = ssoId;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 
-    public String getTwoFactorSecret() { return twoFactorSecret; }
+    public String getTwoFactorSecret() {
+        return twoFactorSecret;
+    }
 
-    public void setTwoFactorSecret(String twoFactorSecret) { this.twoFactorSecret = twoFactorSecret; }
+    public void setTwoFactorSecret(String twoFactorSecret) {
+        this.twoFactorSecret = twoFactorSecret;
+    }
 
-    public Picture getProfilePicture() { return profilePicture; }
+    public Picture getProfilePicture() {
+        return profilePicture;
+    }
 
-    public void setProfilePicture(Picture profilePicture) { this.profilePicture = profilePicture; }
+    public void setProfilePicture(Picture profilePicture) {
+        this.profilePicture = profilePicture;
+    }
 
     public String getPasswordHash() {
         return passwordHash;
@@ -126,7 +151,11 @@ public class Account {
         return incomingContacts;
     }
 
-    public List<Album> getAlbums() { return albums; }
+    public List<Album> getAlbums() {
+        return albums;
+    }
 
-    public List<AlbumPermission> getAlbumPermissions() { return albumPermissions; }
+    public List<AlbumPermission> getAlbumPermissions() {
+        return albumPermissions;
+    }
 }

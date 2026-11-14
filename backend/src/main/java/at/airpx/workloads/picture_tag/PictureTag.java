@@ -19,8 +19,7 @@ public class PictureTag {
     @JoinColumn(name = "tag_id", nullable = false)
     private Tag tag;
 
-    public PictureTag() {
-    }
+    public PictureTag() {}
 
     public PictureTag(PictureTagId id) {
         this.id = id;

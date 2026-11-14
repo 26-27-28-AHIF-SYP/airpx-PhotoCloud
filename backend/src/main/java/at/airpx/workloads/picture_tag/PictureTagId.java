@@ -1,7 +1,6 @@
 package at.airpx.workloads.picture_tag;
 
 import jakarta.persistence.Embeddable;
-
 import java.io.Serializable;
 import java.util.Objects;
 

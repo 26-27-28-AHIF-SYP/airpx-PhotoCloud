@@ -36,7 +36,7 @@ public class AlbumShareLink {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    protected AlbumShareLink() { }
+    protected AlbumShareLink() {}
 
     public AlbumShareLink(Album album, String token, String passwordHash, LocalDateTime expiresAt) {
         this.album = album;
@@ -50,10 +50,27 @@ public class AlbumShareLink {
         if (createdAt == null) createdAt = LocalDateTime.now();
     }
 
-    public Long getId() { return id; }
-    public Album getAlbum() { return album; }
-    public String getToken() { return token; }
-    public String getPasswordHash() { return passwordHash; }
-    public LocalDateTime getExpiresAt() { return expiresAt; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
+    public Long getId() {
+        return id;
+    }
+
+    public Album getAlbum() {
+        return album;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public LocalDateTime getExpiresAt() {
+        return expiresAt;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 }

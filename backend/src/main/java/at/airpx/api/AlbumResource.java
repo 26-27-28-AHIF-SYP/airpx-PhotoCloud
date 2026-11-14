@@ -1,7 +1,6 @@
 package at.airpx.api;
 
 import at.airpx.workloads.album.AlbumService;
-import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -14,7 +13,9 @@ public class AlbumResource {
 
     private final AlbumService albumService;
 
-    public AlbumResource(AlbumService albumService) { this.albumService = albumService; }
+    public AlbumResource(AlbumService albumService) {
+        this.albumService = albumService;
+    }
 
     @GET
     public Response getAlbums() {

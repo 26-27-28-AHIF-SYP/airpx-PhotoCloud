@@ -1,8 +1,7 @@
 package at.airpx.workloads.contact;
 
-import jakarta.persistence.Embeddable;
 import jakarta.persistence.Column;
-
+import jakarta.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -14,8 +13,7 @@ public class ContactId implements Serializable {
     @Column(name = "contact_account_id")
     private Long contactAccountId;
 
-    public ContactId() {
-    }
+    public ContactId() {}
 
     public ContactId(Long accountId, Long contactAccountId) {
         this.accountId = accountId;
@@ -41,7 +39,8 @@ public class ContactId implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof ContactId contactId)) return false;
-        return Objects.equals(accountId, contactId.accountId) && Objects.equals(contactAccountId, contactId.contactAccountId);
+        return Objects.equals(accountId, contactId.accountId)
+                && Objects.equals(contactAccountId, contactId.contactAccountId);
     }
 
     @Override

@@ -33,8 +33,7 @@ public class Contact {
     @Column(nullable = false, length = 20)
     private ContactStatus status = ContactStatus.PENDING;
 
-    protected Contact() {
-    }
+    protected Contact() {}
 
     public Contact(Account account, Account contactAccount) {
         this.account = Objects.requireNonNull(account, "account is required");

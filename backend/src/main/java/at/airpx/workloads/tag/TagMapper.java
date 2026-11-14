@@ -5,11 +5,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class TagMapper {
-    public TagDTO toDTO(Tag tag){
-        return new TagDTO(
-                tag.getId(),
-                tag.getTagName(),
-                tag.getDescription()
-        );
+    public TagDTO toDTO(Tag tag) {
+        return new TagDTO(tag.getId(), tag.getTagName(), tag.getDescription());
     }
 }

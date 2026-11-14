@@ -1,10 +1,10 @@
 package at.airpx;
 
-import at.airpx.workloads.account.Account;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import at.airpx.workloads.account.Account;
+import org.junit.jupiter.api.Test;
 
 class AccountEntityTest {
     @Test

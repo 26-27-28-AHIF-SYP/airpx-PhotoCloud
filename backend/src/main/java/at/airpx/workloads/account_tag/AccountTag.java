@@ -1,7 +1,6 @@
 package at.airpx.workloads.account_tag;
 
 import at.airpx.workloads.account.Account;
-import at.airpx.workloads.picture.Picture;
 import at.airpx.workloads.tag.Tag;
 import jakarta.persistence.*;
 
@@ -20,8 +19,7 @@ public class AccountTag {
     @JoinColumn(name = "tag_id", nullable = false)
     private Tag tag;
 
-    public AccountTag() {
-    }
+    public AccountTag() {}
 
     public AccountTag(AccountTagId id) {
         this.id = id;

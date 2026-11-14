@@ -1,5 +1,9 @@
 package at.airpx;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import at.airpx.workloads.account.Account;
 import at.airpx.workloads.contact.Contact;
 import at.airpx.workloads.contact.ContactId;
@@ -9,13 +13,8 @@ import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceException;
-import org.junit.jupiter.api.Test;
-
 import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 class ContactEntityTest {
@@ -47,8 +46,18 @@ class ContactEntityTest {
         assertEquals(sender.getId(), loaded.getAccount().getId());
         assertEquals(recipient.getId(), loaded.getContactAccount().getId());
         assertEquals(ContactStatus.ACCEPTED, loaded.getStatus());
-        assertEquals(1, entityManager.find(Account.class, sender.getId()).getOutgoingContacts().size());
-        assertEquals(1, entityManager.find(Account.class, recipient.getId()).getIncomingContacts().size());
+        assertEquals(
+                1,
+                entityManager
+                        .find(Account.class, sender.getId())
+                        .getOutgoingContacts()
+                        .size());
+        assertEquals(
+                1,
+                entityManager
+                        .find(Account.class, recipient.getId())
+                        .getIncomingContacts()
+                        .size());
     }
 
     @Test

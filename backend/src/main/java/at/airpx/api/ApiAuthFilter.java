@@ -7,7 +7,6 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
-
 import java.security.Principal;
 import java.util.Set;
 
@@ -26,8 +25,8 @@ public class ApiAuthFilter implements ContainerRequestFilter {
     public void filter(ContainerRequestContext request) {
         String requestPath = request.getUriInfo().getPath();
         String path = requestPath.startsWith("/") ? requestPath.substring(1) : requestPath;
-        boolean protectedPath = PROTECTED_PATHS.stream()
-                .anyMatch(base -> path.equals(base) || path.startsWith(base + "/"));
+        boolean protectedPath =
+                PROTECTED_PATHS.stream().anyMatch(base -> path.equals(base) || path.startsWith(base + "/"));
         if (!protectedPath) return;
 
         String header = request.getHeaderString("Authorization");
@@ -44,10 +43,25 @@ public class ApiAuthFilter implements ContainerRequestFilter {
 
         boolean secure = request.getSecurityContext().isSecure();
         request.setSecurityContext(new jakarta.ws.rs.core.SecurityContext() {
-            @Override public Principal getUserPrincipal() { return () -> accountId.get().toString(); }
-            @Override public boolean isUserInRole(String role) { return false; }
-            @Override public boolean isSecure() { return secure; }
-            @Override public String getAuthenticationScheme() { return "Bearer"; }
+            @Override
+            public Principal getUserPrincipal() {
+                return () -> accountId.get().toString();
+            }
+
+            @Override
+            public boolean isUserInRole(String role) {
+                return false;
+            }
+
+            @Override
+            public boolean isSecure() {
+                return secure;
+            }
+
+            @Override
+            public String getAuthenticationScheme() {
+                return "Bearer";
+            }
         });
     }
 }

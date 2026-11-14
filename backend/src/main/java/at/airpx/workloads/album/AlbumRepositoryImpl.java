@@ -21,8 +21,8 @@ public class AlbumRepositoryImpl implements AlbumRepository {
 
     @Override
     public Optional<Album> findByIdAndOwner(long albumId, long ownerId) {
-        return entityManager.createQuery(
-                        "select a from Album a where a.id = :albumId and a.owner.id = :ownerId", Album.class)
+        return entityManager
+                .createQuery("select a from Album a where a.id = :albumId and a.owner.id = :ownerId", Album.class)
                 .setParameter("albumId", albumId)
                 .setParameter("ownerId", ownerId)
                 .getResultStream()

@@ -1,12 +1,12 @@
 package at.airpx.workloads.account;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Base64;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 
 @ApplicationScoped
 public class PasswordHasherImpl implements PasswordHasher {
@@ -41,7 +41,9 @@ public class PasswordHasherImpl implements PasswordHasher {
     private byte[] derive(String password, byte[] salt) {
         try {
             PBEKeySpec specification = new PBEKeySpec(password.toCharArray(), salt, ITERATIONS, KEY_LENGTH);
-            return SecretKeyFactory.getInstance(ALGORITHM).generateSecret(specification).getEncoded();
+            return SecretKeyFactory.getInstance(ALGORITHM)
+                    .generateSecret(specification)
+                    .getEncoded();
         } catch (GeneralSecurityException exception) {
             throw new IllegalStateException("Password hashing is not available", exception);
         }

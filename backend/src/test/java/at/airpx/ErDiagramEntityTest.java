@@ -1,5 +1,8 @@
 package at.airpx;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import at.airpx.workloads.account.Account;
 import at.airpx.workloads.ai_metadata.AiMetadata;
 import at.airpx.workloads.album.Album;
@@ -11,13 +14,9 @@ import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.Test;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 class ErDiagramEntityTest {
@@ -62,7 +61,17 @@ class ErDiagramEntityTest {
         assertEquals(1, loadedAlbum.getPictures().size());
         assertEquals(1, loadedAlbum.getPermissions().size());
         assertEquals(1, loadedAlbum.getShareLinks().size());
-        assertEquals(1, entityManager.find(Picture.class, picture.getId()).getAiMetadata().size());
-        assertEquals(1, entityManager.find(Picture.class, picture.getId()).getFaceRecognitions().size());
+        assertEquals(
+                1,
+                entityManager
+                        .find(Picture.class, picture.getId())
+                        .getAiMetadata()
+                        .size());
+        assertEquals(
+                1,
+                entityManager
+                        .find(Picture.class, picture.getId())
+                        .getFaceRecognitions()
+                        .size());
     }
 }

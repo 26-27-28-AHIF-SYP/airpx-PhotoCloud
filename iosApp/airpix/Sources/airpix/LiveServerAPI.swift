@@ -20,7 +20,7 @@ struct LiveServerAPI: ServerAPI {
     func missingHashes(baseURL: URL, token: String, hashes: [String]) async throws -> Set<String> {
         let body = try JSONEncoder.serverAPI.encode(MissingPhotosRequest(hashes: hashes))
         let response: MissingPhotosResponse = try await request(
-            baseURL: baseURL, path: "/api/photos/missing", method: "POST", body: body, token: token
+            baseURL: baseURL, path: "/api/pictures/missing", method: "POST", body: body, token: token
         )
         return Set(response.missingHashes)
     }
@@ -29,7 +29,7 @@ struct LiveServerAPI: ServerAPI {
         let boundary = "AirPx-\(UUID().uuidString)"
         let bodyURL = try MultipartPhotoUpload.makeBody(fileURL: fileURL, metadata: metadata, boundary: boundary)
         defer { try? FileManager.default.removeItem(at: bodyURL) }
-        guard let url = URL(string: "/api/photos", relativeTo: baseURL)?.absoluteURL else { throw ServerAPIError.invalidURL }
+        guard let url = URL(string: "/api/pictures", relativeTo: baseURL)?.absoluteURL else { throw ServerAPIError.invalidURL }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
@@ -44,7 +44,7 @@ struct LiveServerAPI: ServerAPI {
     }
 
     func listPhotos(baseURL: URL, token: String) async throws -> [PhotoServerRecord] {
-        try await request(baseURL: baseURL, path: "/api/photos", method: "GET", token: token)
+        try await request(baseURL: baseURL, path: "/api/pictures", method: "GET", token: token)
     }
 
     private func request<T: Decodable & Sendable>(

@@ -11,8 +11,8 @@
 
 ## Sync contract
 
-The client uses `GET /api`, `POST /api/auth/login`, `POST /api/photos/missing`,
-multipart `POST /api/photos`, and `GET /api/photos`. It caches hashes by PhotoKit
+The client uses `GET /api`, `POST /api/auth/login`, `POST /api/pictures/missing`,
+multipart `POST /api/pictures`, and `GET /api/pictures`. It caches hashes by PhotoKit
 asset local identifier and modification date. Tokens belong in Keychain. Keep
 development HTTP exceptions limited to the explicit hosts listed in
 `airpix/Info.plist`; do not enable arbitrary cleartext traffic globally.

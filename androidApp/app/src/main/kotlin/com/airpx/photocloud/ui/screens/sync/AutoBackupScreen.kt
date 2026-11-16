@@ -53,10 +53,6 @@ fun AutoBackupScreen(
     val workInfos by WorkManager.getInstance(context).getWorkInfosForUniqueWorkFlow(PhotoSyncScheduler.IMMEDIATE)
         .collectAsState(initial = emptyList())
     val work = workInfos.firstOrNull()
-    val automaticWorkInfos by WorkManager.getInstance(context)
-        .getWorkInfosForUniqueWorkFlow(PhotoSyncScheduler.AUTOMATIC)
-        .collectAsState(initial = emptyList())
-    val automaticWork = automaticWorkInfos.firstOrNull()
     val progress = work?.progress
     val found = progress?.getInt("found", work.outputData.getInt("found", 0)) ?: 0
     val uploaded = progress?.getInt("uploaded", work.outputData.getInt("uploaded", 0)) ?: 0
@@ -66,12 +62,9 @@ fun AutoBackupScreen(
     val hasAnyPermission = permissionStatus != PhotoPermissionStatus.DENIED
     val syncDisabledReasons = buildList {
         if (!signedIn) add("Bitte zuerst anmelden und den Server verbinden.")
-        if (!isAutoBackupEnabled) add("Bitte zuerst Auto-Backup aktivieren.")
         if (!hasAnyPermission) add("Bitte zuerst Medienzugriff erlauben.")
-        if (work?.state?.isFinished == false) {
-            add("Eine Synchronisierung läuft bereits oder wartet auf die Netzwerkverbindung.")
-        }
     }
+    val manualSyncWarning = manualSyncWarning(work?.state)
 
     Column(
         modifier = modifier
@@ -188,15 +181,13 @@ fun AutoBackupScreen(
             color = if (isAutoBackupEnabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error
         )
         if (failed > 0) Text("Fehlgeschlagen: $failed", color = MaterialTheme.colorScheme.error)
-        val errorMessage = progress?.getString("message")
-            ?: work?.outputData?.getString("message")
-            ?: automaticWork?.progress?.getString("message")
-            ?: automaticWork?.outputData?.getString("message")
+        val errorMessage = progress?.getString("message") ?: work?.outputData?.getString("message")
         if (errorMessage != null) Text(errorMessage, color = MaterialTheme.colorScheme.error)
+        if (manualSyncWarning != null) Text(manualSyncWarning, color = MaterialTheme.colorScheme.error)
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = { PhotoSyncScheduler.syncNow(context, wifiOnly) },
-            enabled = syncDisabledReasons.isEmpty(),
+            enabled = canStartManualSync(signedIn, hasAnyPermission),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Jetzt synchronisieren")

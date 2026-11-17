@@ -137,7 +137,7 @@ final class UploadQueue: PhotoSyncAPIClient {
         guard let session else { throw UploadQueueError.sessionUnavailable }
         let boundary = "AirPx-\(UUID().uuidString)"
         let bodyURL = try MultipartPhotoUpload.makeBody(fileURL: fileURL, metadata: metadata, boundary: boundary)
-        guard let url = URL(string: "/api/photos", relativeTo: baseURL)?.absoluteURL else {
+        guard let url = URL(string: "/api/pictures", relativeTo: baseURL)?.absoluteURL else {
             try? FileManager.default.removeItem(at: bodyURL)
             throw UploadQueueError.invalidEndpoint
         }

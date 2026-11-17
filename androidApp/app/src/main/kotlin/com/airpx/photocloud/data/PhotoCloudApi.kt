@@ -29,13 +29,13 @@ class PhotoCloudApi(private val baseUrl: String, private val token: String) {
 
     fun missing(hashes: List<String>): Set<String> {
         if (hashes.isEmpty()) return emptySet()
-        val result = request("/photos/missing", "POST", JSONObject().put("hashes", JSONArray(hashes)).toString())
+        val result = request("/pictures/missing", "POST", JSONObject().put("hashes", JSONArray(hashes)).toString())
         return (0 until result.getJSONArray("missingHashes").length()).map { result.getJSONArray("missingHashes").getString(it) }.toSet()
     }
 
     fun upload(uriName: String, capturedAt: String?, hash: String, size: Long, mimeType: String, read: (java.io.OutputStream) -> Unit) {
         val boundary = "AirPx-${System.nanoTime()}"
-        val connection = open("/photos", "POST", "multipart/form-data; boundary=$boundary")
+        val connection = open("/pictures", "POST", "multipart/form-data; boundary=$boundary")
         connection.setChunkedStreamingMode(64 * 1024)
         DataOutputStream(connection.outputStream).use { out ->
             fun field(name: String, value: String) {

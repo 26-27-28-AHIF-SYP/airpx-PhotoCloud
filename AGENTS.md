@@ -14,8 +14,8 @@
 
 Both mobile clients use the backend API. The flow is: authenticate with
 `POST /api/auth/login`, compute local SHA-256 hashes, check missing hashes with
-`POST /api/photos/missing`, upload missing files as multipart `POST /api/photos`,
-then refresh the user's list with `GET /api/photos`. Photos and stored files are
+`POST /api/pictures/missing`, upload missing files as multipart `POST /api/pictures`,
+then refresh the user's list with `GET /api/pictures`. Pictures and stored files are
 owned by the authenticated user. Do not document planned sharing, AI, or
 end-to-end encryption as implemented unless the code confirms it.
 

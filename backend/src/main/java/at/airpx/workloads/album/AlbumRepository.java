@@ -1,31 +1,12 @@
 package at.airpx.workloads.album;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.Transactional;
-
 import java.util.List;
+import java.util.Optional;
 
-@ApplicationScoped
-public class AlbumRepository {
+public interface AlbumRepository {
+    List<Album> findAllAlbums();
 
-    private final EntityManager entityManager;
+    Optional<Album> findByIdAndOwner(long albumId, long ownerId);
 
-    public AlbumRepository(EntityManager entityManager) {
-        this.entityManager = entityManager;
-    }
-
-    // --------------- Repo Methods ---------------
-
-    public List<Album> findAllAlbums() {
-        return entityManager.createQuery("select a from Album a", Album.class).getResultList();
-    }
-
-    public boolean existsByIdAndOwner(long albumId, long ownerId) {
-        return entityManager.createQuery("select count(a) from Album a where a.id = :albumId and a.owner.id = :ownerId", Long.class)
-                .setParameter("albumId", albumId).setParameter("ownerId", ownerId).getSingleResult() > 0;
-    }
-
-    @Transactional
-    public void persist(Album album) { entityManager.persist(album); }
+    void persist(Album album);
 }

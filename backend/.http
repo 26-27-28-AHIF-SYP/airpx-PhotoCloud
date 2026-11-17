@@ -2,13 +2,13 @@ POST http://localhost:8080/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "user@example.com",
+  "email": "account@example.com",
   "password": "testpw"
 }
 
 ###
 
-GET http://localhost:8080/api/photos
+GET http://localhost:8080/api/pictures
 Content-Type: application/json
 Authorization: Bearer <TOKEN>
 
@@ -26,38 +26,38 @@ Content-Type: application/json
 ###
 
 // Vor dem Senden anpassen:
-// sha256sum photo.jpg
-// stat -c%s photo.jpg
-@photoHash=HIER_DEN_SHA256_HASH_EINTRAGEN
-@photoSize=HIER_DIE_DATEIGROESSE_EINTRAGEN
+// sha256sum picture.jpg
+// stat -c%s picture.jpg
+@pictureHash=HIER_DEN_SHA256_HASH_EINTRAGEN
+@pictureSize=HIER_DIE_DATEIGROESSE_EINTRAGEN
 
-POST http://localhost:8080/api/photos
+POST http://localhost:8080/api/pictures
 Authorization: Bearer 3_b-LsGiSJ0PHfq8ihJrBTFVCV2S7Jdn6Dt2fwu_VNc
-Content-Type: multipart/form-data; boundary=PhotoUploadBoundary
+Content-Type: multipart/form-data; boundary=PictureUploadBoundary
 
---PhotoUploadBoundary
-Content-Disposition: form-data; name="file"; filename="photo.jpg"
+--PictureUploadBoundary
+Content-Disposition: form-data; name="file"; filename="picture.jpg"
 Content-Type: image/jpeg
 
-< ./photo.jpg
---PhotoUploadBoundary
+< ./picture.jpg
+--PictureUploadBoundary
 Content-Disposition: form-data; name="filename"
 
-photo.jpg
---PhotoUploadBoundary
+picture.jpg
+--PictureUploadBoundary
 Content-Disposition: form-data; name="capturedAt"
 
 2026-11-13T10:00:00Z
---PhotoUploadBoundary
+--PictureUploadBoundary
 Content-Disposition: form-data; name="sha256"
 
-{{photoHash}}
---PhotoUploadBoundary
+{{pictureHash}}
+--PictureUploadBoundary
 Content-Disposition: form-data; name="size"
 
-{{photoSize}}
---PhotoUploadBoundary
+{{pictureSize}}
+--PictureUploadBoundary
 Content-Disposition: form-data; name="mimeType"
 
 image/jpeg
---PhotoUploadBoundary--
+--PictureUploadBoundary--

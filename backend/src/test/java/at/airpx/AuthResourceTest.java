@@ -1,11 +1,11 @@
 package at.airpx;
 
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.*;
+
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import org.junit.jupiter.api.Test;
-
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.*;
 
 @QuarkusTest
 @TestProfile(BackendTestProfile.class)
@@ -13,8 +13,7 @@ class AuthResourceTest {
 
     @Test
     void loginReturnsBearerToken() {
-        given()
-                .contentType("application/json")
+        given().contentType("application/json")
                 .body("""
                         {"email":"TEST@example.com","password":"correct horse battery staple"}
                         """)
@@ -29,8 +28,7 @@ class AuthResourceTest {
 
     @Test
     void loginRejectsInvalidPassword() {
-        given()
-                .contentType("application/json")
+        given().contentType("application/json")
                 .body("""
                         {"email":"test@example.com","password":"wrong password"}
                         """)
@@ -42,8 +40,7 @@ class AuthResourceTest {
 
     @Test
     void registerCreatesUser() {
-        given()
-                .contentType("application/json")
+        given().contentType("application/json")
                 .body("""
                         {
                         "username": "newuser",
@@ -61,8 +58,7 @@ class AuthResourceTest {
 
     @Test
     void registeredUserCanLogin() {
-        given()
-                .contentType("application/json")
+        given().contentType("application/json")
                 .body("""
                         {
                         "username": "loginuser",
@@ -74,8 +70,7 @@ class AuthResourceTest {
                 .then()
                 .statusCode(201);
 
-        given()
-                .contentType("application/json")
+        given().contentType("application/json")
                 .body("""
                         {
                         "email": "loginuser@example.com",
@@ -91,8 +86,7 @@ class AuthResourceTest {
 
     @Test
     void registerRejectsDuplicateEmail() {
-        given()
-                .contentType("application/json")
+        given().contentType("application/json")
                 .body("""
                         {
                         "username": "duplicateuser",
@@ -104,8 +98,7 @@ class AuthResourceTest {
                 .then()
                 .statusCode(201);
 
-        given()
-                .contentType("application/json")
+        given().contentType("application/json")
                 .body("""
                         {
                         "username": "anotheruser",
@@ -120,8 +113,7 @@ class AuthResourceTest {
 
     @Test
     void registerRejectsInvalidRequest() {
-        given()
-                .contentType("application/json")
+        given().contentType("application/json")
                 .body("""
                         {
                         "username": "",
@@ -134,8 +126,7 @@ class AuthResourceTest {
                 .then()
                 .statusCode(400);
 
-        given()
-                .contentType("application/json")
+        given().contentType("application/json")
                 .body("""
                         {
                         "username": "invalidrequestuser",
@@ -148,8 +139,7 @@ class AuthResourceTest {
                 .then()
                 .statusCode(400);
 
-        given()
-                .contentType("application/json")
+        given().contentType("application/json")
                 .body("""
                         {
                         "username": "invalidrequestuser",

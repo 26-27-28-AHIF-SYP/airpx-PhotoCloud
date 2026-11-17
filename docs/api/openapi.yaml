@@ -13,9 +13,9 @@ security:
   - bearerAuth: []
 
 paths:
-  /api/photos/missing:
+  /api/pictures/missing:
     post:
-      operationId: findMissingPhotoHashes
+      operationId: findMissingPictureHashes
       summary: Find hashes not yet stored for the authenticated user
       requestBody:
         required: true
@@ -44,9 +44,9 @@ paths:
                     type: array
                     items: { type: string }
         '401': { $ref: '#/components/responses/ErrorResponse' }
-  /api/photos:
+  /api/pictures:
     get:
-      operationId: listOwnedPhotos
+      operationId: listOwnedPictures
       summary: List this user's uploaded photos
       responses:
         '200':
@@ -55,10 +55,10 @@ paths:
             application/json:
               schema:
                 type: array
-                items: { $ref: '#/components/schemas/OwnedPhoto' }
+                items: { $ref: '#/components/schemas/OwnedPicture' }
         '401': { $ref: '#/components/responses/ErrorResponse' }
     post:
-      operationId: uploadOwnedPhoto
+      operationId: uploadOwnedPicture
       summary: Upload an original photo with metadata
       requestBody:
         required: true
@@ -80,7 +80,7 @@ paths:
           description: Upload stored.
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/OwnedPhoto' }
+              schema: { $ref: '#/components/schemas/OwnedPicture' }
         '400': { $ref: '#/components/responses/ErrorResponse' }
         '401': { $ref: '#/components/responses/ErrorResponse' }
         '413': { description: Request exceeds configured body size. }
@@ -124,9 +124,9 @@ paths:
         "500":
           $ref: "#/components/responses/ErrorResponse"
 
-  /api/v1/photos/missing:
+  /api/v1/pictures/missing:
     post:
-      operationId: findMissingPhotos
+      operationId: findMissingPictures
       summary: Find which content hashes are not stored for this user
       description: >
         Hashes are lowercase SHA-256 hex digests of the original file bytes,
@@ -136,14 +136,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/MissingPhotosRequest"
+              $ref: "#/components/schemas/MissingPicturesRequest"
       responses:
         "200":
           description: Hashes not currently stored for the authenticated user.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/MissingPhotosResponse"
+                $ref: "#/components/schemas/MissingPicturesResponse"
         "400":
           $ref: "#/components/responses/ErrorResponse"
         "401":
@@ -151,9 +151,9 @@ paths:
         "500":
           $ref: "#/components/responses/ErrorResponse"
 
-  /api/v1/photos:
+  /api/v1/pictures:
     post:
-      operationId: uploadPhoto
+      operationId: uploadPicture
       summary: Upload one photo or video with its metadata
       description: >
         Send one original file and its JSON metadata as multipart/form-data.
@@ -191,13 +191,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Photo"
+                $ref: "#/components/schemas/Picture"
         "201":
           description: Photo or video stored.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Photo"
+                $ref: "#/components/schemas/Picture"
         "400":
           $ref: "#/components/responses/ErrorResponse"
         "401":
@@ -210,11 +210,11 @@ paths:
           $ref: "#/components/responses/ErrorResponse"
 
     get:
-      operationId: listPhotos
+      operationId: listPictures
       summary: List the authenticated user's photos and videos
       description: >
         Pages are ordered by capture date descending, with photos lacking a
-        capture date last and photo ID as a stable tie-breaker.
+        capture date last and picture ID as a stable tie-breaker.
       parameters:
         - name: cursor
           in: query
@@ -237,7 +237,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PhotoPage"
+                $ref: "#/components/schemas/PicturePage"
         "400":
           $ref: "#/components/responses/ErrorResponse"
         "401":
@@ -245,12 +245,12 @@ paths:
         "500":
           $ref: "#/components/responses/ErrorResponse"
 
-  /api/v1/photos/{photoId}/thumbnail:
+  /api/v1/pictures/{pictureId}/thumbnail:
     get:
       operationId: downloadThumbnail
       summary: Download a photo's thumbnail
       parameters:
-        - $ref: "#/components/parameters/PhotoId"
+        - $ref: "#/components/parameters/PictureId"
       responses:
         "200":
           description: Thumbnail bytes; Content-Type identifies the image format.
@@ -266,12 +266,12 @@ paths:
         "500":
           $ref: "#/components/responses/ErrorResponse"
 
-  /api/v1/photos/{photoId}/original:
+  /api/v1/pictures/{pictureId}/original:
     get:
       operationId: downloadOriginal
       summary: Download a photo's or video's original file
       parameters:
-        - $ref: "#/components/parameters/PhotoId"
+        - $ref: "#/components/parameters/PictureId"
       responses:
         "200":
           description: Original file bytes; Content-Type identifies the media format.
@@ -287,13 +287,13 @@ paths:
         "500":
           $ref: "#/components/responses/ErrorResponse"
 
-  /api/v1/photos/{photoId}:
+  /api/v1/pictures/{pictureId}:
     delete:
-      operationId: deletePhoto
+      operationId: deletePicture
       summary: Delete a photo or video from the server
       description: Deletes the server copy only; it does not delete the local item on the phone.
       parameters:
-        - $ref: "#/components/parameters/PhotoId"
+        - $ref: "#/components/parameters/PictureId"
       responses:
         "204":
           description: Server copy deleted.
@@ -312,8 +312,8 @@ components:
       bearerFormat: opaque
 
   parameters:
-    PhotoId:
-      name: photoId
+    PictureId:
+      name: pictureId
       in: path
       required: true
       schema:
@@ -328,7 +328,7 @@ components:
             $ref: "#/components/schemas/ApiError"
 
   schemas:
-    OwnedPhoto:
+    OwnedPicture:
       type: object
       required: [id, sha256, filename, size, mimeType]
       properties:
@@ -391,7 +391,7 @@ components:
       pattern: "^[a-f0-9]{64}$"
       description: Lowercase hexadecimal SHA-256 digest of the original file bytes.
 
-    MissingPhotosRequest:
+    MissingPicturesRequest:
       type: object
       required:
         - hashes
@@ -404,7 +404,7 @@ components:
           items:
             $ref: "#/components/schemas/ContentHash"
 
-    MissingPhotosResponse:
+    MissingPicturesResponse:
       type: object
       required:
         - missingHashes
@@ -432,7 +432,7 @@ components:
           description: ISO 8601/RFC 3339 capture time, or null if unavailable.
         location:
           oneOf:
-            - $ref: "#/components/schemas/PhotoLocation"
+            - $ref: "#/components/schemas/PictureLocation"
             - type: "null"
           description: Omit or set to null when location is unavailable.
         originalFilename:
@@ -460,7 +460,7 @@ components:
             Optional opaque identifier shared by the still-image and motion
             video resources of one Live Photo.
 
-    PhotoLocation:
+    PictureLocation:
       type: object
       required:
         - latitude
@@ -475,7 +475,7 @@ components:
           minimum: -180
           maximum: 180
 
-    Photo:
+    Picture:
       type: object
       required:
         - id
@@ -494,7 +494,7 @@ components:
           format: date-time
           description: ISO 8601/RFC 3339 time the server accepted the upload.
         metadata:
-          $ref: "#/components/schemas/PhotoMetadata"
+          $ref: "#/components/schemas/PictureMetadata"
         thumbnailUrl:
           type: string
           format: uri
@@ -504,7 +504,7 @@ components:
           format: uri
           description: Same-server URL for the authenticated original route.
 
-    PhotoMetadata:
+    PictureMetadata:
       type: object
       required:
         - capturedAt
@@ -520,7 +520,7 @@ components:
           format: date-time
         location:
           oneOf:
-            - $ref: "#/components/schemas/PhotoLocation"
+            - $ref: "#/components/schemas/PictureLocation"
             - type: "null"
         originalFilename:
           type: string
@@ -540,7 +540,7 @@ components:
             - string
             - "null"
 
-    PhotoPage:
+    PicturePage:
       type: object
       required:
         - items
@@ -549,7 +549,7 @@ components:
         items:
           type: array
           items:
-            $ref: "#/components/schemas/Photo"
+            $ref: "#/components/schemas/Picture"
         nextCursor:
           type:
             - string

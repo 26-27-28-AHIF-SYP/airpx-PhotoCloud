@@ -1,0 +1,8 @@
+[Unit]
+Description=Update AirPx PhotoCloud when the current branch changes
+
+[Service]
+Type=oneshot
+User=CHANGE_ME
+WorkingDirectory=/path/to/airpx-PhotoCloud
+ExecStart=/path/to/airpx-PhotoCloud/deploy/update.sh

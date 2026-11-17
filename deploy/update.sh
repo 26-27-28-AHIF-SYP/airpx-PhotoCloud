@@ -3,11 +3,14 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 git fetch origin
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
-if [ "$(git rev-parse HEAD)" != "$(git rev-parse "origin/$BRANCH")" ]; then
+LOCAL=$(git rev-parse HEAD)
+REMOTE=$(git rev-parse "origin/$BRANCH")
+if [ "$LOCAL" != "$REMOTE" ]; then
+  if [ "$(git merge-base "$LOCAL" "$REMOTE")" != "$LOCAL" ]; then
+    echo "Local branch is not behind origin/$BRANCH; refusing update." >&2
+    exit 1
+  fi
   git pull --ff-only
-  cd backend
-  # Remove this block once the Dockerfile builds the jar itself
-  docker run --rm -v "$PWD":/build -v "$HOME/.m2":/root/.m2 -w /build \
-    maven:3-eclipse-temurin-21 mvn package -DskipTests
-  docker compose up -d --build
+  docker compose --env-file backend/.env -f backend/docker-compose.yml build
+  docker compose --env-file backend/.env -f backend/docker-compose.yml up -d
 fi

@@ -2,6 +2,8 @@ import Foundation
 import Observation
 @preconcurrency import Photos
 import UIKit
+import UniformTypeIdentifiers
+import PhotoCloudSync
 
 enum LibrarySortOrder: String, CaseIterable, Identifiable {
     case captureDate = "creationDate"
@@ -114,6 +116,27 @@ final class PhotoLibraryService: NSObject, PHPhotoLibraryChangeObserver {
             photos.append(LocalPhoto(asset: asset))
         }
         return photos
+    }
+
+    func fetchSyncAssets() -> [PhotoSyncAsset] {
+        let results = PHAsset.fetchAssets(with: .image, options: nil)
+        var assets: [PhotoSyncAsset] = []
+        assets.reserveCapacity(results.count)
+        results.enumerateObjects { asset, _, _ in
+            let resources = PHAssetResource.assetResources(for: asset)
+            guard let resource = resources.first(where: { $0.type == .fullSizePhoto })
+                    ?? resources.first(where: { $0.type == .photo }) else { return }
+            let fileExtension = URL(fileURLWithPath: resource.originalFilename).pathExtension
+            let mimeType = UTType(filenameExtension: fileExtension)?.preferredMIMEType ?? "image/jpeg"
+            assets.append(PhotoSyncAsset(
+                localIdentifier: asset.localIdentifier,
+                modificationDate: asset.modificationDate,
+                capturedAt: asset.creationDate,
+                originalFilename: resource.originalFilename,
+                mimeType: mimeType
+            ))
+        }
+        return assets
     }
 
     func fetchLibraryPhotos(

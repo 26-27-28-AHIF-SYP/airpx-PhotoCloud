@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,17 +18,61 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.LaunchedEffect
+import androidx.work.WorkInfo
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.airpx.photocloud.PhotoPermissionStatus
+import com.airpx.photocloud.data.PhotoSyncScheduler
+import com.airpx.photocloud.data.SyncSettings
+import androidx.work.WorkManager
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collect
 
 @Composable
 fun AutoBackupScreen(
-    hasPhotoPermission: Boolean,
+    permissionStatus: PhotoPermissionStatus,
     onRequestPermission: () -> Unit,
-    modifier: Modifier = Modifier
+    onSelectMorePhotos: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
+    val settings = remember { SyncSettings(context) }
+    val scope = rememberCoroutineScope()
     var isAutoBackupEnabled by remember { mutableStateOf(false) }
+    var wifiOnly by remember { mutableStateOf(false) }
+    var signedIn by remember { mutableStateOf(false) }
+    var manualWorkId by remember { mutableStateOf(PhotoSyncScheduler.latestManualWorkId(context)) }
+    var work by remember { mutableStateOf<WorkInfo?>(null) }
+    LaunchedEffect(Unit) {
+        wifiOnly = settings.wifiOnly()
+        signedIn = settings.token() != null && settings.server().isNotBlank()
+        isAutoBackupEnabled = settings.automatic()
+        PhotoSyncScheduler.setAutomatic(context, isAutoBackupEnabled, wifiOnly)
+    }
+    LaunchedEffect(manualWorkId) {
+        if (manualWorkId == null) {
+            work = null
+        } else {
+            WorkManager.getInstance(context).getWorkInfoByIdFlow(manualWorkId!!).collect { work = it }
+        }
+    }
+    val progress = work?.progress
+    val workInfo = work
+    val found = progress?.getInt("found", work?.outputData?.getInt("found", 0) ?: 0) ?: 0
+    val uploaded = progress?.getInt("uploaded", work?.outputData?.getInt("uploaded", 0) ?: 0) ?: 0
+    val pending = progress?.getInt("pending", work?.outputData?.getInt("pending", 0) ?: 0) ?: 0
+    val failed = progress?.getInt("failed", work?.outputData?.getInt("failed", 0) ?: 0) ?: 0
+
+    val hasAnyPermission = permissionStatus != PhotoPermissionStatus.DENIED
+    val syncDisabledReasons = buildList {
+        if (!signedIn) add("Bitte zuerst anmelden und den Server verbinden.")
+        if (!hasAnyPermission) add("Bitte zuerst Medienzugriff erlauben.")
+    }
+    val manualSyncWarning = manualSyncWarning(work?.state)
 
     Column(
         modifier = modifier
@@ -45,14 +90,27 @@ fun AutoBackupScreen(
             )
             Switch(
                 checked = isAutoBackupEnabled,
-                onCheckedChange = { isAutoBackupEnabled = it }
+                enabled = signedIn && hasAnyPermission,
+                onCheckedChange = {
+                    isAutoBackupEnabled = it
+                    scope.launch { settings.saveAutomatic(it) }
+                    PhotoSyncScheduler.setAutomatic(context, it, wifiOnly)
+                }
             )
         }
         Text(
-            text = "Deine Medien werden nicht hochgeladen, solange Auto-Backup deaktiviert ist.",
+            text = "Automatische Hintergrund-Synchronisierung ein- oder ausschalten.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Nur WLAN", modifier = Modifier.weight(1f))
+            Switch(checked = wifiOnly, onCheckedChange = {
+                wifiOnly = it
+                scope.launch { settings.saveWifiOnly(it) }
+                PhotoSyncScheduler.setAutomatic(context, isAutoBackupEnabled, it)
+            })
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
         HorizontalDivider()
@@ -65,16 +123,30 @@ fun AutoBackupScreen(
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = if (hasPhotoPermission) "Medien-Zugriff erteilt" else "Zugriff nicht erteilt",
+            text = when (permissionStatus) {
+                PhotoPermissionStatus.FULL -> "Vollständiger Medien-Zugriff erteilt"
+                PhotoPermissionStatus.PARTIAL -> "Teilweiser Medien-Zugriff erteilt (nur ausgewählte Fotos)"
+                PhotoPermissionStatus.DENIED -> "Zugriff nicht erteilt"
+            },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        if (!hasPhotoPermission) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(onClick = onRequestPermission) {
-                Text("Zugriff erlauben")
+        Spacer(modifier = Modifier.height(8.dp))
+        when (permissionStatus) {
+            PhotoPermissionStatus.DENIED -> {
+                Button(onClick = onRequestPermission) {
+                    Text("Zugriff erlauben")
+                }
             }
+            PhotoPermissionStatus.PARTIAL -> {
+                Row {
+                    OutlinedButton(onClick = onSelectMorePhotos) {
+                        Text("Weitere Fotos freigeben")
+                    }
+                }
+            }
+            PhotoPermissionStatus.FULL -> { /* No extra action needed */ }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -87,22 +159,54 @@ fun AutoBackupScreen(
             color = MaterialTheme.colorScheme.primary
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Text("Ausstehend:", modifier = Modifier.weight(1f))
-            Text("0")
+        if (workInfo == null) {
+            Text("Noch keine Synchronisierung gestartet.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        } else {
+            Text("$found Fotos gefunden, $uploaded hochgeladen, $failed fehlgeschlagen")
+            if (found == 0 && (workInfo.state.isFinished || progress?.getInt("found", -1) == 0)) {
+                Text("Keine Fotos gefunden. Prüfe den Medienzugriff", color = MaterialTheme.colorScheme.error)
+            }
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Text("Ausstehend:", modifier = Modifier.weight(1f))
+                Text(pending.toString())
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Text("Hochgeladen:", modifier = Modifier.weight(1f))
+                Text(uploaded.toString())
+            }
         }
-        Spacer(modifier = Modifier.height(4.dp))
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Text("Hochgeladen:", modifier = Modifier.weight(1f))
-            Text("0")
-        }
+
+        Text(
+            text = when {
+                !signedIn -> "Anmeldung: Bitte zuerst anmelden."
+                else -> "Anmeldung: Angemeldet"
+            },
+            color = if (signedIn) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error
+        )
+        Text(
+            text = if (isAutoBackupEnabled) "Auto-Backup: aktiviert" else "Auto-Backup: deaktiviert",
+            color = if (isAutoBackupEnabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error
+        )
+        if (failed > 0) Text("Fehlgeschlagen: $failed", color = MaterialTheme.colorScheme.error)
+        val errorMessage = progress?.getString("message") ?: work?.outputData?.getString("message")
+        if (errorMessage != null) Text(errorMessage, color = MaterialTheme.colorScheme.error)
+        if (manualSyncWarning != null) Text(manualSyncWarning, color = MaterialTheme.colorScheme.error)
         Spacer(modifier = Modifier.height(16.dp))
         Button(
-            onClick = { /* Sync now */ },
-            enabled = isAutoBackupEnabled && hasPhotoPermission,
+            onClick = {
+                if (work?.state?.isFinished != false) {
+                    manualWorkId = PhotoSyncScheduler.syncNow(context, wifiOnly)
+                }
+            },
+            enabled = canStartManualSync(signedIn, hasAnyPermission),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Jetzt synchronisieren")
+        }
+        if (syncDisabledReasons.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(syncDisabledReasons.joinToString(separator = "\n"), color = MaterialTheme.colorScheme.error)
         }
     }
 }

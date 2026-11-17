@@ -79,6 +79,7 @@ final class ServerSession {
 
     var isLoggedIn: Bool { token != nil && !requiresLogin }
     var implementationLabel: String { selectedImplementation == "mock" ? "Mock" : "Live" }
+    var isUsingMockAPI: Bool { selectedImplementation == "mock" }
 
     #if DEBUG
     func setImplementation(_ value: String) {
@@ -98,14 +99,8 @@ final class ServerSession {
 
     func updateServerURL(_ input: String) {
         let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.lowercased().hasPrefix("http://") {
-            if token != nil { logout() }
-            serverURL = trimmed
-            serverInfo = nil
-            errorMessage = AppStrings.httpsRequired
-            return
-        }
         guard !trimmed.isEmpty else {
+            if token != nil { logout() }
             serverURL = ""
             UserDefaults.standard.set("", forKey: "airpx.server.url")
             serverInfo = nil
@@ -113,7 +108,16 @@ final class ServerSession {
             return
         }
         let withScheme = trimmed.contains("://") ? trimmed : "https://" + trimmed
-        let normalized = withScheme.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        guard let parsed = URL(string: withScheme), let host = parsed.host?.lowercased(),
+              let scheme = parsed.scheme?.lowercased(), parsed.user == nil, parsed.password == nil,
+              scheme == "https" || (scheme == "http" && Self.developmentHTTPHosts.contains(host)) else {
+            if token != nil { logout() }
+            serverURL = withScheme
+            serverInfo = nil
+            errorMessage = AppStrings.httpsRequired
+            return
+        }
+        let normalized = parsed.absoluteString.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
         if token != nil { logout() }
         serverURL = normalized
         UserDefaults.standard.set(normalized, forKey: "airpx.server.url")
@@ -183,11 +187,22 @@ final class ServerSession {
         }
     }
 
+    func syncCredentials() throws -> (baseURL: URL, token: String) {
+        refreshExpirationState()
+        guard let token, !requiresLogin, let baseURL else { throw ServerAPIError.unauthorized }
+        return (baseURL, token)
+    }
+
+    func serverAPIClient() -> any ServerAPI { api }
+
     private var baseURL: URL? {
-        guard let parsed = URL(string: serverURL), parsed.scheme?.lowercased() == "https",
-              parsed.host != nil, parsed.user == nil, parsed.password == nil else { return nil }
+        guard let parsed = URL(string: serverURL), let host = parsed.host?.lowercased(),
+              let scheme = parsed.scheme?.lowercased(), parsed.user == nil, parsed.password == nil else { return nil }
+        guard scheme == "https" || (scheme == "http" && Self.developmentHTTPHosts.contains(host)) else { return nil }
         return parsed
     }
+
+    private static let developmentHTTPHosts: Set<String> = ["10.0.2.2", "localhost", "127.0.0.1", "photocloud.local"]
 
     private var api: any ServerAPI {
         #if DEBUG

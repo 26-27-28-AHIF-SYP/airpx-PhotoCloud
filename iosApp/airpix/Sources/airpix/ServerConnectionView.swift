@@ -29,8 +29,10 @@ struct ServerConnectionView: View {
                 .disabled(session.isChecking || serverURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
 
                 if let info = session.serverInfo {
-                    LabeledContent(AppStrings.serverName, value: info.name)
-                    LabeledContent(AppStrings.apiVersion, value: info.apiVersion)
+                    LabeledContent(AppStrings.serverName, value: info.name ?? session.serverURL)
+                    if let apiVersion = info.apiVersion {
+                        LabeledContent(AppStrings.apiVersion, value: apiVersion)
+                    }
                 }
             }
 
@@ -56,7 +58,7 @@ struct ServerConnectionView: View {
                     } label: {
                         if session.isChecking { ProgressView() } else { Text(AppStrings.login) }
                     }
-                    .disabled(session.isChecking || email.isEmpty || password.isEmpty || info.status != "ok")
+                    .disabled(session.isChecking || email.isEmpty || password.isEmpty || info.status != "up")
                 }
             }
 

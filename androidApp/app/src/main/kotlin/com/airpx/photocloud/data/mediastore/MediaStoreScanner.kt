@@ -120,4 +120,70 @@ class MediaStoreScanner(
 
         return items
     }
+
+    fun scanPhotoItemsFromUris(uris: List<Uri>): List<PhotoItem> {
+        return uris.mapNotNull { uri ->
+            try {
+                var width = 0
+                var height = 0
+                var dateAddedSec = System.currentTimeMillis() / 1000
+                var mediaType = MediaType.PHOTO
+
+                val mimeType = context.contentResolver.getType(uri)
+                if (mimeType?.startsWith("video/") == true) {
+                    mediaType = MediaType.VIDEO
+                }
+
+                val projection = arrayOf(
+                    MediaStore.MediaColumns.DATE_ADDED,
+                    MediaStore.MediaColumns.WIDTH,
+                    MediaStore.MediaColumns.HEIGHT
+                )
+
+                context.contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
+                    if (cursor.moveToFirst()) {
+                        val dateIdx = cursor.getColumnIndex(MediaStore.MediaColumns.DATE_ADDED)
+                        val wIdx = cursor.getColumnIndex(MediaStore.MediaColumns.WIDTH)
+                        val hIdx = cursor.getColumnIndex(MediaStore.MediaColumns.HEIGHT)
+
+                        if (dateIdx != -1 && !cursor.isNull(dateIdx)) {
+                            dateAddedSec = cursor.getLong(dateIdx)
+                        }
+                        if (wIdx != -1 && !cursor.isNull(wIdx)) {
+                            width = cursor.getInt(wIdx)
+                        }
+                        if (hIdx != -1 && !cursor.isNull(hIdx)) {
+                            height = cursor.getInt(hIdx)
+                        }
+                    }
+                }
+
+                PhotoItem(
+                    id = uri.toString(),
+                    contentUri = uri.toString(),
+                    creationTimestamp = Instant.ofEpochSecond(dateAddedSec),
+                    addedTimestamp = Instant.ofEpochSecond(dateAddedSec),
+                    modificationTimestamp = Instant.ofEpochSecond(dateAddedSec),
+                    location = null,
+                    width = width,
+                    height = height,
+                    mediaType = mediaType,
+                    isFavorite = false
+                )
+            } catch (e: Exception) {
+                PhotoItem(
+                    id = uri.toString(),
+                    contentUri = uri.toString(),
+                    creationTimestamp = Instant.now(),
+                    addedTimestamp = Instant.now(),
+                    modificationTimestamp = Instant.now(),
+                    location = null,
+                    width = 0,
+                    height = 0,
+                    mediaType = MediaType.PHOTO,
+                    isFavorite = false
+                )
+            }
+        }
+    }
 }

@@ -1,0 +1,63 @@
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "account@example.com",
+  "password": "testpw"
+}
+
+###
+
+GET http://localhost:8080/api/pictures
+Content-Type: application/json
+Authorization: Bearer <TOKEN>
+
+###
+
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "email": "admin@airpx.at",
+  "password": "password"
+}
+
+###
+
+// Vor dem Senden anpassen:
+// sha256sum picture.jpg
+// stat -c%s picture.jpg
+@pictureHash=HIER_DEN_SHA256_HASH_EINTRAGEN
+@pictureSize=HIER_DIE_DATEIGROESSE_EINTRAGEN
+
+POST http://localhost:8080/api/pictures
+Authorization: Bearer 3_b-LsGiSJ0PHfq8ihJrBTFVCV2S7Jdn6Dt2fwu_VNc
+Content-Type: multipart/form-data; boundary=PictureUploadBoundary
+
+--PictureUploadBoundary
+Content-Disposition: form-data; name="file"; filename="picture.jpg"
+Content-Type: image/jpeg
+
+< ./picture.jpg
+--PictureUploadBoundary
+Content-Disposition: form-data; name="filename"
+
+picture.jpg
+--PictureUploadBoundary
+Content-Disposition: form-data; name="capturedAt"
+
+2026-11-13T10:00:00Z
+--PictureUploadBoundary
+Content-Disposition: form-data; name="sha256"
+
+{{pictureHash}}
+--PictureUploadBoundary
+Content-Disposition: form-data; name="size"
+
+{{pictureSize}}
+--PictureUploadBoundary
+Content-Disposition: form-data; name="mimeType"
+
+image/jpeg
+--PictureUploadBoundary--

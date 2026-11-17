@@ -18,9 +18,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.LaunchedEffect
+import androidx.work.WorkInfo
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,6 +30,7 @@ import com.airpx.photocloud.data.PhotoSyncScheduler
 import com.airpx.photocloud.data.SyncSettings
 import androidx.work.WorkManager
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collect
 
 @Composable
 fun AutoBackupScreen(
@@ -44,34 +45,34 @@ fun AutoBackupScreen(
     var isAutoBackupEnabled by remember { mutableStateOf(false) }
     var wifiOnly by remember { mutableStateOf(false) }
     var signedIn by remember { mutableStateOf(false) }
+    var manualWorkId by remember { mutableStateOf(PhotoSyncScheduler.latestManualWorkId(context)) }
+    var work by remember { mutableStateOf<WorkInfo?>(null) }
     LaunchedEffect(Unit) {
         wifiOnly = settings.wifiOnly()
         signedIn = settings.token() != null && settings.server().isNotBlank()
         isAutoBackupEnabled = settings.automatic()
         PhotoSyncScheduler.setAutomatic(context, isAutoBackupEnabled, wifiOnly)
     }
-    val workInfos by WorkManager.getInstance(context).getWorkInfosForUniqueWorkFlow(PhotoSyncScheduler.IMMEDIATE)
-        .collectAsState(initial = emptyList())
-    val work = workInfos.firstOrNull()
-    val automaticWorkInfos by WorkManager.getInstance(context)
-        .getWorkInfosForUniqueWorkFlow(PhotoSyncScheduler.AUTOMATIC)
-        .collectAsState(initial = emptyList())
-    val automaticWork = automaticWorkInfos.firstOrNull()
+    LaunchedEffect(manualWorkId) {
+        if (manualWorkId == null) {
+            work = null
+        } else {
+            WorkManager.getInstance(context).getWorkInfoByIdFlow(manualWorkId!!).collect { work = it }
+        }
+    }
     val progress = work?.progress
-    val found = progress?.getInt("found", work.outputData.getInt("found", 0)) ?: 0
-    val uploaded = progress?.getInt("uploaded", work.outputData.getInt("uploaded", 0)) ?: 0
-    val pending = progress?.getInt("pending", work.outputData.getInt("pending", 0)) ?: 0
-    val failed = progress?.getInt("failed", work.outputData.getInt("failed", 0)) ?: 0
+    val workInfo = work
+    val found = progress?.getInt("found", work?.outputData?.getInt("found", 0) ?: 0) ?: 0
+    val uploaded = progress?.getInt("uploaded", work?.outputData?.getInt("uploaded", 0) ?: 0) ?: 0
+    val pending = progress?.getInt("pending", work?.outputData?.getInt("pending", 0) ?: 0) ?: 0
+    val failed = progress?.getInt("failed", work?.outputData?.getInt("failed", 0) ?: 0) ?: 0
 
     val hasAnyPermission = permissionStatus != PhotoPermissionStatus.DENIED
     val syncDisabledReasons = buildList {
         if (!signedIn) add("Bitte zuerst anmelden und den Server verbinden.")
-        if (!isAutoBackupEnabled) add("Bitte zuerst Auto-Backup aktivieren.")
         if (!hasAnyPermission) add("Bitte zuerst Medienzugriff erlauben.")
-        if (work?.state?.isFinished == false) {
-            add("Eine Synchronisierung läuft bereits oder wartet auf die Netzwerkverbindung.")
-        }
     }
+    val manualSyncWarning = manualSyncWarning(work?.state)
 
     Column(
         modifier = modifier
@@ -158,11 +159,11 @@ fun AutoBackupScreen(
             color = MaterialTheme.colorScheme.primary
         )
         Spacer(modifier = Modifier.height(8.dp))
-        if (work == null) {
+        if (workInfo == null) {
             Text("Noch keine Synchronisierung gestartet.", color = MaterialTheme.colorScheme.onSurfaceVariant)
         } else {
             Text("$found Fotos gefunden, $uploaded hochgeladen, $failed fehlgeschlagen")
-            if (found == 0 && (work.state.isFinished || progress?.getInt("found", -1) == 0)) {
+            if (found == 0 && (workInfo.state.isFinished || progress?.getInt("found", -1) == 0)) {
                 Text("Keine Fotos gefunden. Prüfe den Medienzugriff", color = MaterialTheme.colorScheme.error)
             }
             Row(modifier = Modifier.fillMaxWidth()) {
@@ -188,15 +189,17 @@ fun AutoBackupScreen(
             color = if (isAutoBackupEnabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error
         )
         if (failed > 0) Text("Fehlgeschlagen: $failed", color = MaterialTheme.colorScheme.error)
-        val errorMessage = progress?.getString("message")
-            ?: work?.outputData?.getString("message")
-            ?: automaticWork?.progress?.getString("message")
-            ?: automaticWork?.outputData?.getString("message")
+        val errorMessage = progress?.getString("message") ?: work?.outputData?.getString("message")
         if (errorMessage != null) Text(errorMessage, color = MaterialTheme.colorScheme.error)
+        if (manualSyncWarning != null) Text(manualSyncWarning, color = MaterialTheme.colorScheme.error)
         Spacer(modifier = Modifier.height(16.dp))
         Button(
-            onClick = { PhotoSyncScheduler.syncNow(context, wifiOnly) },
-            enabled = syncDisabledReasons.isEmpty(),
+            onClick = {
+                if (work?.state?.isFinished != false) {
+                    manualWorkId = PhotoSyncScheduler.syncNow(context, wifiOnly)
+                }
+            },
+            enabled = canStartManualSync(signedIn, hasAnyPermission),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Jetzt synchronisieren")

@@ -14,6 +14,7 @@ import androidx.work.workDataOf
 import com.airpx.photocloud.domain.usecase.SynchronizePhotosUseCase
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import java.util.UUID
 import android.util.Log
 
 class PhotoSyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
@@ -76,10 +77,19 @@ class PhotoSyncWorker(context: Context, params: WorkerParameters) : CoroutineWor
 object PhotoSyncScheduler {
     const val IMMEDIATE = "photo-sync-immediate"
     const val AUTOMATIC = "photo-sync-automatic"
-    fun syncNow(context: Context, wifiOnly: Boolean = false) {
+    private const val PREFS = "photo_sync"
+    private const val LAST_MANUAL_WORK_ID = "last_manual_work_id"
+
+    fun latestManualWorkId(context: Context): UUID? = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        .getString(LAST_MANUAL_WORK_ID, null)?.let { runCatching { UUID.fromString(it) }.getOrNull() }
+
+    fun syncNow(context: Context, wifiOnly: Boolean = false): UUID {
         val request = OneTimeWorkRequestBuilder<PhotoSyncWorker>().setConstraints(constraints(wifiOnly))
             .setBackoffCriteria(androidx.work.BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS).build()
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putString(LAST_MANUAL_WORK_ID, request.id.toString()).apply()
         WorkManager.getInstance(context).enqueueUniqueWork(IMMEDIATE, ExistingWorkPolicy.KEEP, request)
+        return request.id
     }
     fun setAutomatic(context: Context, enabled: Boolean, wifiOnly: Boolean = false) {
         val manager = WorkManager.getInstance(context)

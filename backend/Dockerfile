@@ -1,16 +1,14 @@
 FROM maven:3-eclipse-temurin-21 AS build
 
 WORKDIR /build
-COPY pom.xml .
+COPY pom.xml ./
 RUN mvn dependency:go-offline
 COPY . .
 RUN mvn package -DskipTests
 
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:21-jre-alpine
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache curl
 WORKDIR /app
 COPY --from=build /build/target/quarkus-app/ /app/
 

@@ -102,8 +102,8 @@ already passed:
 ./mvnw package -DskipTests
 ```
 
-The root `Dockerfile` copies `target/quarkus-app/`, so the Maven package step
-must run before building the Docker image.
+The root `Dockerfile` builds the Quarkus application in a Maven stage, so no
+separate Maven package step is needed before building the Docker image.
 
 Start the Docker Compose deployment from `backend/`:
 
@@ -159,8 +159,9 @@ that container directory on the `picture-data` Docker volume. `PHOTO_MAX_BODY_SI
 sets `quarkus.http.limits.max-body-size` and defaults to `100M`.
 
 The bootstrap values are optional. If all required bootstrap values are
-present, the application creates the account only when that normalized email does
-not already exist. It does not update an existing account's password.
+present, the application creates the account only when neither that normalized
+email nor the configured username already exists. It does not update an
+existing account's password.
 
 Never put real credentials in tracked files. The test configuration contains a
 deliberate test-only account and must not be used as a production credential

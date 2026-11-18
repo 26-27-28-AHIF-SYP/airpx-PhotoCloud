@@ -1,9 +1,9 @@
 [Unit]
-Description=Check AirPx PhotoCloud for updates every five minutes
+Description=Check AirPx PhotoCloud for updates every two minutes
 
 [Timer]
-OnBootSec=2min
-OnUnitActiveSec=5min
+OnBootSec=1min
+OnUnitActiveSec=2min
 Unit=airpx-update.service
 
 [Install]

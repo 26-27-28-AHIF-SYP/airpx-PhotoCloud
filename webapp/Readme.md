@@ -13,6 +13,10 @@ npm install
 npm run dev
 ```
 
+Vite proxies relative `/api` requests to `http://localhost:8080` during local
+development. The hosted Nginx container uses the same `/api` path and proxies
+it to the backend on the Compose network.
+
 Die Übersicht zeigt zuletzt hinzugefügte Medien und neue Fotos aus geteilten
 Alben. Dabei wird jeweils das geteilte Album samt Absender angezeigt.
 Benachrichtigungen erscheinen beim Profil. „Teilen“ zeigt alle geteilten Alben;

@@ -21,7 +21,16 @@ jobs:
           cache-dependency-path: backend/pom.xml
       - name: Run backend tests
         working-directory: backend
-        run: ./mvnw --batch-mode test
+        run: ./mvnw --batch-mode verify
+      - name: Upload backend test reports
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: backend-test-reports
+          path: |
+            backend/target/surefire-reports/*.xml
+            backend/target/failsafe-reports/*.xml
+          if-no-files-found: warn
 
   android:
     name: Android build and tests
@@ -39,6 +48,13 @@ jobs:
       - name: Run Android build and tests
         working-directory: androidApp
         run: ./gradlew assembleDebug test
+      - name: Upload Android test reports
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: android-test-reports
+          path: androidApp/app/build/test-results/**/*.xml
+          if-no-files-found: warn
 
   ios:
     name: iOS sync tests
@@ -49,7 +65,15 @@ jobs:
         run: swift --version
       - name: Run iOS sync tests
         working-directory: iosApp/PhotoCloudSync
-        run: swift test
+        run: swift test 2>&1 | tee swift-test.log
+        shell: bash
+      - name: Upload iOS test log
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: ios-test-log
+          path: iosApp/PhotoCloudSync/swift-test.log
+          if-no-files-found: warn
 
   web:
     name: Web build

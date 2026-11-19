@@ -9,9 +9,14 @@ log() { printf '%s %s\n' "$(date --iso-8601=seconds)" "$*"; }
 exec 9>"$REPO_DIR/.git/airpx-update.lock"
 flock -n 9 || { log "Another update is running; exiting."; exit 0; }
 
-BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-if [[ "$BRANCH" == HEAD ]]; then
+CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+BRANCH="${AIRPX_UPDATE_BRANCH:-$CURRENT_BRANCH}"
+if [[ "$CURRENT_BRANCH" == HEAD ]]; then
   log "Detached HEAD; refusing update."
+  exit 1
+fi
+if [[ "$CURRENT_BRANCH" != "$BRANCH" ]]; then
+  log "Checked out branch $CURRENT_BRANCH does not match configured branch $BRANCH; refusing update."
   exit 1
 fi
 
@@ -51,10 +56,11 @@ if ! git pull --ff-only origin "$BRANCH"; then
   log "Fast-forward pull failed; leaving the running stack unchanged."
   exit 1
 fi
+UPDATED="$(git rev-parse HEAD)"
 BUILDING=1
 trap rollback_build_failure EXIT
 docker compose --env-file backend/.env -f backend/docker-compose.yml build
 BUILDING=0
 trap - EXIT
 docker compose --env-file backend/.env -f backend/docker-compose.yml up -d
-log "Updated from $LOCAL to $REMOTE."
+log "Updated from $LOCAL to $UPDATED."

@@ -18,8 +18,8 @@ setting; the web service uses 8081. The compose file and updater read
 `backend/.env`; it is never overwritten by updates.
 
 For deployment, keep the checkout on `main` (or the chosen deployment branch)
-with a matching `origin/<branch>`; the updater follows the branch currently
-checked out.
+with a matching local branch and `origin/<branch>`; the updater follows the
+branch currently checked out.
 
 Validate the Compose configuration and start the stack from the repository root:
 
@@ -87,22 +87,23 @@ build restores the checkout to its previous commit and leaves running
 containers in place. Logs, including timestamps, are available in journald.
 The updater reads (but never writes) `backend/.env`.
 
-Edit `deploy/airpx-update.service` before installing it. Replace `CHANGE_ME`
-with the Linux account that owns the checkout and replace both occurrences of
-`/opt/airpx-photocloud` with the absolute clone path. The account needs
-permission to read the checkout and run Docker; the unit adds the `docker`
-supplementary group. Copy the unit files and enable the timer:
+Install the updater as root after checking out the deployment branch. The
+installer defaults to this repository, the invoking user (`SUDO_USER`), and
+the current branch. It verifies rendered systemd units before installation;
+the service account must be in the `docker` group. Check the rendered units
+without root or system changes with `./deploy/install.sh --check`.
 
 ```sh
-sudo cp deploy/airpx-update.service deploy/airpx-update.timer /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable --now airpx-update.timer
+sudo ./deploy/install.sh --branch main
 systemctl list-timers airpx-update.timer
 ```
 
 The timer starts one minute after boot and repeats two minutes after each
 activation. Inspect a run with `sudo systemctl start airpx-update.service` and
-`journalctl -u airpx-update.service -o short-iso`.
+`journalctl -u airpx-update.service -o short-iso`. Use
+`./deploy/install.sh --check` to render and verify the units without
+installing them, or `sudo ./deploy/install.sh --uninstall` to remove the timer
+and service.
 
 ## Rollback and troubleshooting
 
@@ -113,10 +114,11 @@ that version. Once the deployment branch is repaired, switch back to it and
 re-enable the timer:
 
 ```sh
+REPO_PATH=/path/to/airpx-PhotoCloud
 sudo systemctl stop airpx-update.timer
-git -C /opt/airpx-photocloud checkout --detach <known-good-commit>
-docker compose --env-file /opt/airpx-photocloud/backend/.env -f /opt/airpx-photocloud/backend/docker-compose.yml up -d --build
-git -C /opt/airpx-photocloud switch main
+git -C "$REPO_PATH" checkout --detach <known-good-commit>
+docker compose --env-file "$REPO_PATH/backend/.env" -f "$REPO_PATH/backend/docker-compose.yml" up -d --build
+git -C "$REPO_PATH" switch main
 sudo systemctl enable --now airpx-update.timer
 ```
 
@@ -128,3 +130,61 @@ files or branch divergence in the checkout. If the web page loads but API
 requests fail, check app health and that Nginx can resolve the `app` service.
 If the tailnet URL is unavailable, check `tailscale status`,
 `tailscale serve status`, and that Funnel is not enabled.
+
+## Acceptance tests
+
+Run the verification script from the checkout after installing the timer:
+
+```sh
+./deploy/verify.sh
+```
+
+### Reboot recovery
+
+Confirm Docker is enabled at boot and the Compose stack is healthy, then reboot:
+
+```sh
+sudo reboot
+```
+
+After reconnecting to the server, run `./deploy/verify.sh`. It checks that the
+three containers are running, the app is healthy, Postgres has no host port,
+the app and web ports bind only to loopback, `/api` responds through Nginx, and
+the update timer is enabled and active. It also checks the Tailscale Serve
+mapping when Tailscale is installed.
+
+### Automatic update
+
+Push a harmless commit to the branch configured in the installer. For a
+commit-only check that follows the repository trailer convention, run on the
+development checkout:
+
+```sh
+git commit --allow-empty -m 'chore(deploy): verify automatic update' -m "Co-authored-by: Claude <noreply@anthropic.com>
+Co-authored-by: Codex <noreply@openai.com>"
+git push origin main
+```
+
+On the server, follow the updater log and check the deployed checkout revision:
+
+```sh
+sudo journalctl -u airpx-update.service -f
+git -C /path/to/airpx-PhotoCloud rev-parse --short HEAD
+```
+
+Within five minutes, the log should report the old and new commit hashes and
+the server checkout should match the pushed commit. Run `./deploy/verify.sh`
+again to confirm the stack remains healthy.
+
+### Failed build recovery
+
+Use a disposable deployment branch rather than `main`. Record the current app
+container ID with `docker inspect quarkus-app --format '{{.Id}} {{.State.Health.Status}}'`,
+push a commit that makes the backend Docker build fail, and wait for the
+scheduled update. Follow `sudo journalctl -u airpx-update.service -f`.
+The log should state that the build failed and the checkout was restored. Run
+the same `docker inspect` command and confirm the container ID is unchanged and
+healthy. The recorded app container should still be running and healthy, and
+`./deploy/verify.sh` should pass. Repair or revert the test commit on that
+branch, then confirm the next update succeeds. The failed commit is logged on
+each retry until the branch is repaired; the timer does not apply its image.

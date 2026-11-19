@@ -13,6 +13,41 @@ security:
   - bearerAuth: []
 
 paths:
+  /api:
+    get:
+      operationId: getApiStatus
+      summary: Check that the current API is responding
+      security: []
+      responses:
+        '200':
+          description: API is available.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status: { type: string, const: up }
+
+  /api/auth/login:
+    post:
+      operationId: loginCurrentApi
+      summary: Log in and obtain a bearer token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: Login succeeded.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginResponse' }
+        '400': { $ref: '#/components/responses/ErrorResponse' }
+        '401': { $ref: '#/components/responses/ErrorResponse' }
+
   /api/pictures/missing:
     post:
       operationId: findMissingPictureHashes

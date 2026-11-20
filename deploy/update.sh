@@ -47,7 +47,7 @@ rollback_build_failure() {
   if [[ $status -ne 0 && "${BUILDING:-0}" == 1 ]]; then
     trap - EXIT
     git reset --hard "$LOCAL"
-    log "Image build failed; checkout restored to $LOCAL so this commit will not be retried."
+    log "Image build failed; checkout restored to $LOCAL; the commit will be retried on the next update check."
   fi
   exit "$status"
 }

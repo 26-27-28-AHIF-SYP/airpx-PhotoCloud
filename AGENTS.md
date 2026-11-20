@@ -49,7 +49,7 @@ authorization.
 
 - Keep changes focused and preserve unrelated worktree edits.
 - Run the relevant module checks and `git diff --check` before finishing.
-- Use small, logical Conventional Commits with imperative English subjects.
+- Use logical Conventional Commits with imperative English subjects.
 - Every commit must end with these trailers, separated from its body by one
   blank line:
 

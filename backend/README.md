@@ -10,7 +10,6 @@ Copy `.env.example` to `.env`, set local database and bootstrap credentials,
 then run from `backend/`:
 
 ```sh
-./mvnw package -DskipTests
 docker compose up -d --build
 docker compose logs -f app
 ```
@@ -21,12 +20,13 @@ from `src/main/resources/db/migration/`; Hibernate validates the resulting
 schema. Development mode instead uses an ephemeral PostgreSQL Dev Service and
 recreates its schema on startup.
 
-Re-run the Maven package command after backend source changes before rebuilding
-the image. The Dockerfile copies the already packaged `target/quarkus-app/`;
-`./mvnw test` alone does not refresh that runnable image input.
+The backend Dockerfile builds the Quarkus application inside a Maven build
+stage, so a fresh checkout only needs Docker Compose.
 
-Do not commit `.env`. The default development API base URL is
-`http://localhost:8080/api` (Android emulator: `http://10.0.2.2:8080/api`).
+Do not commit `.env`. The Compose web app is available at
+`http://127.0.0.1:8081`; its `/api` requests are proxied to the backend.
+Direct development API access defaults to `http://localhost:8080/api`
+(Android emulator: `http://10.0.2.2:8080/api`).
 
 ### Environment variables
 
@@ -42,11 +42,9 @@ Do not commit `.env`. The default development API base URL is
 
 Generate passwords with `openssl rand -hex 24`.
 
-**Bootstrap user:** it is created at startup only. If a user already exists
-with the same username but a different email than `AUTH_BOOTSTRAP_EMAIL`, the
-insert fails with a duplicate-key error and the app does not start. After the
-first start, keep the three values identical to the existing account or empty
-them.
+**Bootstrap user:** it is created at startup when neither the configured
+username nor email already exists. Existing accounts are left unchanged and
+logged; credentials are never reset by bootstrap.
 
 ## Hosting on a server (Tailscale)
 
@@ -66,50 +64,34 @@ the internet. Only devices on your tailnet can reach it.
      # no ports: block
    ```
 
-2. **Build the jar.** The server does not need Java; build in Docker:
-
-   ```sh
-   cd backend
-   docker run --rm -v "$PWD":/build -v ~/.m2:/root/.m2 -w /build \
-     maven:3-eclipse-temurin-21 mvn package -DskipTests
-   sudo chown -R $USER:$USER target
-   ```
-
-3. **Start the stack:**
+2. **Start the stack:**
 
    ```sh
    docker compose up -d --build
    docker compose logs -f app   # wait for "started"
    ```
 
-4. **Install Tailscale** on the server and run `sudo tailscale up`. In the
+3. **Install Tailscale** on the server and run `sudo tailscale up`. In the
    Tailscale admin console under DNS, enable **MagicDNS** and **HTTPS
    Certificates**.
 
-5. **Publish inside the tailnet:**
+4. **Publish inside the tailnet:**
 
    ```sh
-   sudo tailscale serve --bg 8080   # use your APP_PORT
+   sudo tailscale serve --bg http://127.0.0.1:8081
    tailscale serve status           # prints https://<server>.<tailnet>.ts.net
    ```
 
    Do not use `tailscale funnel`; it makes the server public.
 
-6. **Phones:** install Tailscale, sign in to the same account, and enter
+5. **Phones:** install Tailscale, sign in to the same account, and enter
    `https://<server>.<tailnet>.ts.net` as the server URL. Plain `http://` is
    rejected by iOS and blocked by default on Android, so use the HTTPS address.
 
 Check it: open `https://<server>.<tailnet>.ts.net/api` on a phone.
 
-### Updating the server
-
-```sh
-git pull
-cd backend
-docker run --rm -v "$PWD":/build -v ~/.m2:/root/.m2 -w /build \
-  maven:3-eclipse-temurin-21 mvn package -DskipTests
-docker compose up -d --build
-```
+Server installation, Tailscale HTTPS, reboot checks, and the automatic update
+timer are documented in [`../docs/server-hosting.md`](../docs/server-hosting.md).
 
 ### Operations
 

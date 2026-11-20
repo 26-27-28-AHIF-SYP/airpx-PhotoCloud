@@ -2,9 +2,9 @@
 
 Die Web-App ist aktuell bewusst auf eine einzelne, responsive Dashboard-Seite
 beschränkt. Sie verwendet React mit Vite; es gibt keine zusätzlichen
-Frontend-Routen. Der Schalter „Nutzer / Admin“ wechselt für die Mockup-
-Vorschau zwischen dem normalen Dashboard und einer Admin-Übersicht. Er
-simuliert keine Anmeldung oder echte Rollen-/Zugriffsprüfung.
+Frontend-Routen. Die Anmeldung und Fotoliste werden vom Backend geladen. Der
+Schalter „Nutzer / Admin“ bleibt eine Mockup-Vorschau und simuliert keine
+echten Rollen oder Zugriffsrechte.
 
 ## Lokal starten
 
@@ -13,10 +13,22 @@ npm install
 npm run dev
 ```
 
-Die Übersicht zeigt zuletzt hinzugefügte Medien und neue Fotos aus geteilten
-Alben. Dabei wird jeweils das geteilte Album samt Absender angezeigt.
+Vite proxies relative `/api` requests to `http://localhost:8080` during local
+development. The hosted Nginx container uses the same `/api` path and proxies
+it to the backend on the Compose network. Set `VITE_API_BASE_URL` in `.env` to
+override the default `/api` base URL.
+
+The login calls `POST /api/auth/login` and keeps the bearer token in memory
+until logout or page refresh. The gallery calls `GET /api/pictures` and shows
+the default page of up to 20 results. The API currently returns metadata and
+the original-image route has no thumbnail variant, so gallery thumbnails
+remain mock images. Favorites, album membership, sharing, and admin data are
+also still mock data.
+
+Die Übersicht zeigt zuletzt hinzugefügte Medien. Geteilte Alben samt Absender
+werden weiterhin mit Mock-Daten angezeigt.
 Benachrichtigungen erscheinen beim Profil. „Teilen“ zeigt alle geteilten Alben;
-unter „Fotos“ ist die vollständige Galerie verfügbar. Verschachtelte Alben
+unter „Fotos“ ist die geladene Fotoseite verfügbar. Verschachtelte Alben
 filtern die Galerie auf das ausgewählte Album.
 
 Das Admin-Dashboard ist auf einen kleinen privaten Host ausgerichtet: Es zeigt

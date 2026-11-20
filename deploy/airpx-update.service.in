@@ -1,0 +1,11 @@
+[Unit]
+Description=Update AirPx PhotoCloud from the configured branch
+
+[Service]
+Type=oneshot
+User=@USER@
+Group=@GROUP@
+SupplementaryGroups=docker
+WorkingDirectory=@REPO_PATH@
+Environment=@BRANCH_ENV@
+ExecStart=@UPDATE_SCRIPT@

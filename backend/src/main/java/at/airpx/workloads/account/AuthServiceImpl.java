@@ -12,8 +12,8 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import org.jboss.logging.Logger;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class AuthServiceImpl implements AuthService {

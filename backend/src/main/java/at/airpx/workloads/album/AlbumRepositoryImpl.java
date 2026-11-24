@@ -85,6 +85,15 @@ public class AlbumRepositoryImpl implements AlbumRepository {
     @Override
     @Transactional
     public void delete(Album album) {
+        entityManager
+                .createQuery("delete from AlbumPermission p where p.album.id = :albumId")
+                .setParameter("albumId", album.getId())
+                .executeUpdate();
+        entityManager
+                .createQuery("delete from AlbumShareLink s where s.album.id = :albumId")
+                .setParameter("albumId", album.getId())
+                .executeUpdate();
+        entityManager.flush();
         entityManager.remove(album);
     }
 

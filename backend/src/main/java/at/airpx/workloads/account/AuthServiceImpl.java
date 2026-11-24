@@ -62,8 +62,7 @@ public class AuthServiceImpl implements AuthService {
             return;
         }
 
-        Account bootstrapAccount =
-                new Account(username, normalizedEmail, passwordHasher.hash(bootstrapPassword.get()));
+        Account bootstrapAccount = new Account(username, normalizedEmail, passwordHasher.hash(bootstrapPassword.get()));
         accountRepository.persist(bootstrapAccount);
     }
 

@@ -78,7 +78,12 @@ class AuthServiceImplTest {
             }
         };
         return new AuthServiceImpl(
-                accounts, hasher, Optional.of(USERNAME), Optional.of(EMAIL), Optional.of(PASSWORD), Duration.ofHours(8));
+                accounts,
+                hasher,
+                Optional.of(USERNAME),
+                Optional.of(EMAIL),
+                Optional.of(PASSWORD),
+                Duration.ofHours(8));
     }
 
     private static final class InMemoryAccounts implements AccountRepository {

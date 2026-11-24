@@ -37,8 +37,7 @@ public class AlbumRepositoryImpl implements AlbumRepository {
                         select distinct a from Album a
                         left join a.permissions permission
                         where a.owner.id = :account or (permission.account.id = :account and
-                          (permission.canRead = true or permission.canAdd = true or
-                           permission.canRename = true or permission.canDelete = true))
+                          permission.canRead = true)
                         order by a.createdAt desc
                         """, Album.class)
                 .setParameter("account", accountId)

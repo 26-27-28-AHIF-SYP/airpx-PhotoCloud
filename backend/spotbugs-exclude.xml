@@ -32,6 +32,20 @@
         <Bug pattern="EI_EXPOSE_REP2"/>
     </Match>
 
+    <!-- CDI-managed resources and services retain injected collaborators for internal delegation. -->
+    <Match>
+        <Class name="at.airpx.api.AlbumResource"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="at.airpx.workloads.album.AlbumServiceImpl"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="at.airpx.workloads.picture.PictureServiceImpl"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+
     <!--
       Contact's constructor validates its persisted-entity invariants and throws
       IllegalArgumentException for invalid input. The class has no finalizer and

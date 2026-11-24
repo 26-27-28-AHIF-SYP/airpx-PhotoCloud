@@ -79,6 +79,82 @@ paths:
                     type: array
                     items: { type: string }
         '401': { $ref: '#/components/responses/ErrorResponse' }
+  /api/albums:
+    get:
+      operationId: listAlbums
+      summary: List albums owned by or readable to the authenticated user
+      responses:
+        '200':
+          description: Visible albums.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Album' }
+        '401': { $ref: '#/components/responses/ErrorResponse' }
+    post:
+      operationId: createAlbum
+      summary: Create an album owned by the authenticated user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AlbumRequest' }
+      responses:
+        '201':
+          description: Album created.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Album' }
+        '400': { $ref: '#/components/responses/ErrorResponse' }
+        '401': { $ref: '#/components/responses/ErrorResponse' }
+  /api/albums/{albumId}:
+    put:
+      operationId: renameAlbum
+      summary: Rename an album when the user owns it or has rename permission
+      parameters:
+        - { name: albumId, in: path, required: true, schema: { type: integer, format: int64 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AlbumRequest' }
+      responses:
+        '200': { description: Album renamed., content: { application/json: { schema: { $ref: '#/components/schemas/Album' } } } }
+        '400': { $ref: '#/components/responses/ErrorResponse' }
+        '401': { $ref: '#/components/responses/ErrorResponse' }
+        '404': { $ref: '#/components/responses/ErrorResponse' }
+    delete:
+      operationId: deleteAlbum
+      summary: Delete an album when the user owns it or has delete permission
+      description: Removes album membership only. Stored pictures remain in the user's library.
+      parameters:
+        - { name: albumId, in: path, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '204': { description: Album deleted; pictures remain stored. }
+        '401': { $ref: '#/components/responses/ErrorResponse' }
+        '404': { $ref: '#/components/responses/ErrorResponse' }
+  /api/albums/{albumId}/pictures/{pictureId}:
+    post:
+      operationId: addPictureToAlbum
+      summary: Add an owned picture to an album when the user has add permission
+      parameters:
+        - { name: albumId, in: path, required: true, schema: { type: integer, format: int64 } }
+        - { name: pictureId, in: path, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '204': { description: Picture added to album. }
+        '401': { $ref: '#/components/responses/ErrorResponse' }
+        '404': { $ref: '#/components/responses/ErrorResponse' }
+    delete:
+      operationId: removePictureFromAlbum
+      summary: Remove an owned picture from an album when the user has add permission
+      parameters:
+        - { name: albumId, in: path, required: true, schema: { type: integer, format: int64 } }
+        - { name: pictureId, in: path, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '204': { description: Picture removed from album; picture remains stored. }
+        '401': { $ref: '#/components/responses/ErrorResponse' }
+        '404': { $ref: '#/components/responses/ErrorResponse' }
   /api/pictures:
     get:
       operationId: listOwnedPictures
@@ -363,6 +439,18 @@ components:
             $ref: "#/components/schemas/ApiError"
 
   schemas:
+    Album:
+      type: object
+      required: [id, name, createdAt]
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string, maxLength: 100 }
+        createdAt: { type: string, format: date-time }
+    AlbumRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
     OwnedPicture:
       type: object
       required: [id, sha256, filename, size, mimeType]

@@ -13,10 +13,12 @@ import java.util.Base64;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class AuthServiceImpl implements AuthService {
 
+    private static final Logger LOG = Logger.getLogger(AuthServiceImpl.class);
     private static final SecureRandom RANDOM = new SecureRandom();
     private final AccountRepository accountRepository;
     private final PasswordHasher passwordHasher;
@@ -46,17 +48,23 @@ public class AuthServiceImpl implements AuthService {
         if (bootstrapUsername.isEmpty()
                 || bootstrapEmail.isEmpty()
                 || bootstrapPassword.isEmpty()
+                || bootstrapUsername.get().isBlank()
                 || bootstrapEmail.get().isBlank()
                 || bootstrapPassword.get().isEmpty()) {
             return;
         }
 
         String normalizedEmail = normalizeEmail(bootstrapEmail.get());
-        if (accountRepository.findByEmail(normalizedEmail).isEmpty()) {
-            Account bootstrapAccount =
-                    new Account(bootstrapUsername.get(), normalizedEmail, passwordHasher.hash(bootstrapPassword.get()));
-            accountRepository.persist(bootstrapAccount);
+        String username = bootstrapUsername.get().trim();
+        if (accountRepository.findByEmail(normalizedEmail).isPresent()
+                || accountRepository.findByUsername(username).isPresent()) {
+            LOG.infof("Bootstrap account already exists for configured username or email; skipping creation");
+            return;
         }
+
+        Account bootstrapAccount =
+                new Account(username, normalizedEmail, passwordHasher.hash(bootstrapPassword.get()));
+        accountRepository.persist(bootstrapAccount);
     }
 
     @Transactional

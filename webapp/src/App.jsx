@@ -1,4 +1,5 @@
 import React, { useMemo, useRef, useState } from "react";
+import { clearAccessToken, listPictures, login } from "./api/client.js";
 
 const iconPaths = {
   home: "M3 10.5 12 3l9 7.5M5.5 9v11h13V9M9 20v-6h6v6",
@@ -191,6 +192,23 @@ const initialPhotos = [
   },
 ];
 
+function toGalleryPhoto(picture, index) {
+  const capturedAt = picture.capturedAt ? new Date(picture.capturedAt) : null;
+  const fallbackThumbnail = initialPhotos[index % initialPhotos.length];
+
+  return {
+    id: picture.id,
+    title: (picture.filename || `Foto ${picture.id}`).replace(/\.[^.]+$/, ""),
+    date: capturedAt && !Number.isNaN(capturedAt.valueOf())
+      ? capturedAt.toLocaleDateString("de-AT")
+      : "Datum unbekannt",
+    albumId: null,
+    image: fallbackThumbnail.image,
+    favorite: false,
+    shared: false,
+  };
+}
+
 const recentlySharedAlbums = [
   {
     id: "family-2026",
@@ -382,8 +400,13 @@ function SharedAlbumCard({ album, onOpen }) {
 }
 
 function App() {
-  const [photos, setPhotos] = useState(initialPhotos);
+  const [photos, setPhotos] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
   const [search, setSearch] = useState("");
   const [activeView, setActiveView] = useState("overview");
   const [selectedAlbum, setSelectedAlbum] = useState(null);
@@ -417,6 +440,36 @@ function App() {
     setNotice(message);
     window.clearTimeout(showNotice.timeout);
     showNotice.timeout = window.setTimeout(() => setNotice(""), 3200);
+  };
+
+  const handleLogin = async (event) => {
+    event.preventDefault();
+    setIsLoading(true);
+    setLoginError("");
+
+    try {
+      await login(loginEmail, loginPassword);
+      setIsAuthenticated(true);
+      setLoginPassword("");
+      try {
+        const pictures = await listPictures();
+        setPhotos(pictures.map(toGalleryPhoto));
+      } catch (error) {
+        showNotice(error.message || "Fotos konnten nicht geladen werden.");
+      }
+    } catch (error) {
+      setLoginError(error.message || "Anmeldung fehlgeschlagen.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    clearAccessToken();
+    setIsAuthenticated(false);
+    setPhotos([]);
+    setLoginPassword("");
+    setLoginError("");
   };
 
   const showAllPhotos = (view = "overview") => {
@@ -498,6 +551,40 @@ function App() {
   const showOverview = activeView === "overview" && !selectedAlbum && !search.trim();
   const recentPhotos = photos.slice(0, 4);
   const recentSharedPhotos = photos.filter((photo) => photo.shared).slice(0, 3);
+
+  if (!isAuthenticated) {
+    return (
+      <main className="login-page">
+        <form aria-labelledby="login-title" className="login-card" onSubmit={handleLogin}>
+          <span className="login-brand">airpx<span>cloud</span></span>
+          <h1 id="login-title">Bei PhotoCloud anmelden</h1>
+          <p>Melde dich mit deinem PhotoCloud-Konto an, um deine Fotos zu sehen.</p>
+          <label htmlFor="login-email">E-Mail</label>
+          <input
+            autoComplete="username"
+            id="login-email"
+            onChange={(event) => setLoginEmail(event.target.value)}
+            required
+            type="email"
+            value={loginEmail}
+          />
+          <label htmlFor="login-password">Passwort</label>
+          <input
+            autoComplete="current-password"
+            id="login-password"
+            onChange={(event) => setLoginPassword(event.target.value)}
+            required
+            type="password"
+            value={loginPassword}
+          />
+          {loginError && <p className="login-error" role="alert">{loginError}</p>}
+          <button className="login-submit" disabled={isLoading} type="submit">
+            {isLoading ? "Anmeldung läuft …" : "Anmelden"}
+          </button>
+        </form>
+      </main>
+    );
+  }
 
   return (
     <div className="app-shell">
@@ -628,6 +715,8 @@ function App() {
             </div>
           </div>
         </header>
+
+        {isLoading && <p aria-live="polite" className="photo-loading">Fotos werden geladen …</p>}
 
         {isAdmin ? (
           <section aria-label="Admin-Übersicht" className="admin-content">
@@ -863,7 +952,7 @@ function App() {
           ) : (
             <div className="empty-state">
               <Icon name="photos" size={24} />
-              <strong>Keine Fotos gefunden</strong>
+              <strong>{isLoading ? "Fotos werden geladen …" : "Keine Fotos gefunden"}</strong>
             </div>
           )}
           </section>
@@ -936,7 +1025,7 @@ function App() {
 
         <button
           className="logout-button"
-          onClick={() => handleUtilityAction("Abmelden")}
+          onClick={handleLogout}
           type="button"
         >
           <Icon name="logout" size={17} />

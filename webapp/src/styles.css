@@ -76,6 +76,89 @@ input:focus-visible {
   background: rgb(255 247 242 / 48%);
 }
 
+.login-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+}
+
+.login-card {
+  display: grid;
+  width: min(100%, 420px);
+  gap: 12px;
+  padding: 34px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--panel);
+  box-shadow: 0 22px 70px rgb(90 47 40 / 12%);
+}
+
+.login-brand {
+  color: var(--berry);
+  font-family: Manrope, sans-serif;
+  font-size: 25px;
+  font-weight: 800;
+}
+
+.login-brand span {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.login-card h1 {
+  margin: 7px 0 0;
+  font-family: Manrope, sans-serif;
+  font-size: 24px;
+}
+
+.login-card p {
+  margin: 0 0 8px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.login-card label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.login-card input {
+  min-width: 0;
+  padding: 12px 13px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+}
+
+.login-card .login-error {
+  margin: 0;
+  color: var(--berry-dark);
+  font-size: 13px;
+}
+
+.login-submit {
+  min-height: 44px;
+  margin-top: 5px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--berry);
+  color: white;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.login-submit:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.photo-loading {
+  margin: 10px 24px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
 .left-panel,
 .right-panel {
   position: sticky;

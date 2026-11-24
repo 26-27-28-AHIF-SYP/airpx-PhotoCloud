@@ -2,7 +2,7 @@
 
 Die Web-App ist aktuell bewusst auf eine einzelne, responsive Dashboard-Seite
 beschränkt. Sie verwendet React mit Vite; es gibt keine zusätzlichen
-Frontend-Routen. Die Anmeldung und Fotoliste werden vom Backend geladen. Der
+Frontend-Routen. Die Registrierung, Anmeldung und Fotoliste werden vom Backend geladen. Der
 Schalter „Nutzer / Admin“ bleibt eine Mockup-Vorschau und simuliert keine
 echten Rollen oder Zugriffsrechte.
 
@@ -18,8 +18,10 @@ development. The hosted Nginx container uses the same `/api` path and proxies
 it to the backend on the Compose network. Set `VITE_API_BASE_URL` in `.env` to
 override the default `/api` base URL.
 
-The login calls `POST /api/auth/login` and keeps the bearer token in memory
-until logout or page refresh. The gallery calls `GET /api/pictures` and shows
+The registration calls `POST /api/auth/register`; after a successful
+registration, the user can sign in with the new account. Login calls
+`POST /api/auth/login` and keeps the bearer token in memory until logout or
+page refresh. The gallery calls `GET /api/pictures` and shows
 the default page of up to 20 results. The API currently returns metadata and
 the original-image route has no thumbnail variant, so gallery thumbnails
 remain mock images. Favorites, album membership, sharing, and admin data are

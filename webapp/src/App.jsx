@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from "react";
-import { clearAccessToken, listPictures, login } from "./api/client.js";
+import { clearAccessToken, listPictures, login, register } from "./api/client.js";
 
 const iconPaths = {
   home: "M3 10.5 12 3l9 7.5M5.5 9v11h13V9M9 20v-6h6v6",
@@ -404,9 +404,13 @@ function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [authMode, setAuthMode] = useState("login");
+  const [registerUsername, setRegisterUsername] = useState("");
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [registerPasswordConfirmation, setRegisterPasswordConfirmation] = useState("");
   const [loginError, setLoginError] = useState("");
+  const [authMessage, setAuthMessage] = useState("");
   const [search, setSearch] = useState("");
   const [activeView, setActiveView] = useState("overview");
   const [selectedAlbum, setSelectedAlbum] = useState(null);
@@ -446,6 +450,7 @@ function App() {
     event.preventDefault();
     setIsLoading(true);
     setLoginError("");
+    setAuthMessage("");
 
     try {
       await login(loginEmail, loginPassword);
@@ -462,6 +467,40 @@ function App() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleRegister = async (event) => {
+    event.preventDefault();
+    setIsLoading(true);
+    setLoginError("");
+    setAuthMessage("");
+
+    if (loginPassword !== registerPasswordConfirmation) {
+      setLoginError("Die Passwörter stimmen nicht überein.");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      await register(registerUsername, loginEmail, loginPassword);
+      setAuthMode("login");
+      setRegisterUsername("");
+      setRegisterPasswordConfirmation("");
+      setLoginPassword("");
+      setAuthMessage("Konto erstellt. Du kannst dich jetzt anmelden.");
+    } catch (error) {
+      setLoginError(error.message || "Registrierung fehlgeschlagen.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const switchAuthMode = (mode) => {
+    setAuthMode(mode);
+    setLoginError("");
+    setAuthMessage("");
+    setLoginPassword("");
+    setRegisterPasswordConfirmation("");
   };
 
   const handleLogout = () => {
@@ -553,12 +592,35 @@ function App() {
   const recentSharedPhotos = photos.filter((photo) => photo.shared).slice(0, 3);
 
   if (!isAuthenticated) {
+    const isRegistering = authMode === "register";
+
     return (
       <main className="login-page">
-        <form aria-labelledby="login-title" className="login-card" onSubmit={handleLogin}>
+        <form
+          aria-labelledby="login-title"
+          className="login-card"
+          onSubmit={isRegistering ? handleRegister : handleLogin}
+        >
           <span className="login-brand">airpx<span>cloud</span></span>
-          <h1 id="login-title">Bei PhotoCloud anmelden</h1>
-          <p>Melde dich mit deinem PhotoCloud-Konto an, um deine Fotos zu sehen.</p>
+          <h1 id="login-title">{isRegistering ? "Konto erstellen" : "Bei PhotoCloud anmelden"}</h1>
+          <p>
+            {isRegistering
+              ? "Erstelle dein PhotoCloud-Konto, um deine Fotos sicher zu verwalten."
+              : "Melde dich mit deinem PhotoCloud-Konto an, um deine Fotos zu sehen."}
+          </p>
+          {isRegistering && (
+            <>
+              <label htmlFor="register-username">Benutzername</label>
+              <input
+                autoComplete="username"
+                id="register-username"
+                onChange={(event) => setRegisterUsername(event.target.value)}
+                required
+                type="text"
+                value={registerUsername}
+              />
+            </>
+          )}
           <label htmlFor="login-email">E-Mail</label>
           <input
             autoComplete="username"
@@ -570,16 +632,41 @@ function App() {
           />
           <label htmlFor="login-password">Passwort</label>
           <input
-            autoComplete="current-password"
+            autoComplete={isRegistering ? "new-password" : "current-password"}
             id="login-password"
+            minLength={isRegistering ? 8 : undefined}
             onChange={(event) => setLoginPassword(event.target.value)}
             required
             type="password"
             value={loginPassword}
           />
+          {isRegistering && (
+            <>
+              <label htmlFor="register-password-confirmation">Passwort wiederholen</label>
+              <input
+                autoComplete="new-password"
+                id="register-password-confirmation"
+                minLength={8}
+                onChange={(event) => setRegisterPasswordConfirmation(event.target.value)}
+                required
+                type="password"
+                value={registerPasswordConfirmation}
+              />
+            </>
+          )}
+          {authMessage && <p className="login-message" role="status">{authMessage}</p>}
           {loginError && <p className="login-error" role="alert">{loginError}</p>}
           <button className="login-submit" disabled={isLoading} type="submit">
-            {isLoading ? "Anmeldung läuft …" : "Anmelden"}
+            {isLoading
+              ? (isRegistering ? "Konto wird erstellt …" : "Anmeldung läuft …")
+              : (isRegistering ? "Registrieren" : "Anmelden")}
+          </button>
+          <button
+            className="login-switch"
+            onClick={() => switchAuthMode(isRegistering ? "login" : "register")}
+            type="button"
+          >
+            {isRegistering ? "Du hast bereits ein Konto? Anmelden" : "Noch kein Konto? Registrieren"}
           </button>
         </form>
       </main>

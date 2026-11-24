@@ -25,6 +25,14 @@ export async function login(email, password) {
   return result;
 }
 
+export async function register(username, email, password) {
+  return request("/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, email, password }),
+  });
+}
+
 export async function listPictures() {
   const pictures = await request("/pictures");
   if (!Array.isArray(pictures)) throw new Error("Unexpected photo list response.");

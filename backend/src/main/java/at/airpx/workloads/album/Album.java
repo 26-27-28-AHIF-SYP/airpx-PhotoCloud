@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 public class Album {
@@ -46,6 +47,14 @@ public class Album {
 
     @OneToMany(mappedBy = "album")
     private List<AlbumShareLink> shareLinks = new ArrayList<>();
+
+    public Album() {}
+
+    public Album(String name, Account owner) {
+        this.name = name;
+        this.owner = owner;
+        this.createdAt = LocalDateTime.now();
+    }
 
     public Long getId() {
         return id;
@@ -112,9 +121,18 @@ public class Album {
     }
 
     public void addPicture(Picture picture) {
-        if (!pictures.contains(picture)) {
+        if (pictures.stream()
+                .noneMatch(existing -> existing == picture
+                        || (existing.getId() != null && Objects.equals(existing.getId(), picture.getId())))) {
             pictures.add(picture);
             picture.getAlbums().add(this);
         }
+    }
+
+    public void removePicture(Picture picture) {
+        pictures.removeIf(existing ->
+                existing == picture || (picture.getId() != null && Objects.equals(existing.getId(), picture.getId())));
+        picture.getAlbums()
+                .removeIf(existing -> existing == this || (id != null && Objects.equals(existing.getId(), id)));
     }
 }

@@ -65,7 +65,7 @@ jobs:
         run: swift --version
       - name: Run iOS sync tests
         working-directory: iosApp/PhotoCloudSync
-run: |
+        run: |
           set -o pipefail
           swift test 2>&1 | tee swift-test.log
         shell: bash

@@ -27,5 +27,12 @@ let package = Package(
                 .process("Resources"),
             ]
         ),
+        .testTarget(
+            name: "airpixTests",
+            dependencies: [
+                "airpix",
+                .product(name: "PhotoCloudSync", package: "PhotoCloudSync"),
+            ]
+        ),
     ]
 )
